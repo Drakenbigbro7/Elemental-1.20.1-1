@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G",
+    "BG",
+    " R"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "R": {
+      "item": "minecraft:blaze_powder"
+    }
+  },
+  "result": {
+    "item": "elemental:sunforged_scimitar",
+    "count": 1
+  }
+}

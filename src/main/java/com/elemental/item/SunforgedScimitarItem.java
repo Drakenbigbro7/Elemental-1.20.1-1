@@ -1,0 +1,226 @@
+package com.elemental.item;
+
+import com.elemental.entity.SolarArcEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.EntityGroup;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolMaterial;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.UseAction;
+import net.minecraft.world.LightType;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeKeys;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+public class SunforgedScimitarItem extends SwordItem {
+
+    // Durability of the Sunforged Scimitar (balanced between iron and diamond)
+    public static final int DURABILITY = 300;
+
+    // Bonus attack damage (yields diamond-tier 7-8 total damage with ScimitarToolMaterial base of 3)
+    public static final int BASE_ATTACK_DAMAGE = 4;
+
+    // Attack speed modifier (4.0 base + (-2.2) = 1.8 attacks per second, faster than standard swords)
+    public static final float BASE_ATTACK_SPEED = -2.2f;
+
+    // Fast mining speed multiplier when digging sand, red sand, or suspicious sand
+    public static final float SAND_MINING_SPEED = 8.0f;
+
+    // Bonus magic damage dealt to undead targets when in direct sunlight
+    public static final float BONUS_UNDEAD_DAMAGE = 3.0f;
+
+    // Base cooldown in ticks for the Solar Arc projectile ability (240 ticks = 12 seconds)
+    public static final int BASE_COOLDOWN_TICKS = 240;
+
+    // Maximum charge time in ticks (20 ticks = 1 second, 40 = 2 seconds)
+    public static final int MAX_CHARGE_TICKS = 40;
+    // Minimum charge time before projectile can fire
+    public static final int MIN_CHARGE_TICKS = 5;
+
+    // Cooldown reduction percentage applied when in desert biomes (25% reduction)
+    public static final double DESERT_COOLDOWN_REDUCTION = 0.25;
+
+    // Desert cooldown in ticks (240 ticks * 0.75 = 180 ticks = 9 seconds)
+    public static final int DESERT_COOLDOWN_TICKS = 180;
+
+    // Maximum heat level capacity
+    public static final int MAX_HEAT = 150;
+
+    // Heat gained per 20 ticks (1 second) in hot biomes under direct sunlight
+    public static final int HEAT_GAIN_RATE = 1;
+
+    // Heat lost per 20 ticks outside hot biomes or sunlight
+    public static final int HEAT_DECAY_RATE = 1;
+
+    // Heat level needed to trigger bonus fire damage on attack
+    public static final int HEAT_DAMAGE_THRESHOLD = 100;
+
+    // Bonus fire damage to targets when weapon heat is at or above the threshold
+    public static final float HEAT_BONUS_DAMAGE = 1.0f;
+
+    // Controls whether high heat causes self-damage to the holder (configurable risk/reward)
+    public static final boolean SELF_DAMAGE_ENABLED = false;
+
+    // Amount of self-damage dealt to the player when heat threshold is exceeded (if enabled)
+    public static final float HEAT_SELF_DAMAGE = 1.0f;
+
+    public SunforgedScimitarItem(Settings settings) {
+        super(ScimitarToolMaterial.INSTANCE, BASE_ATTACK_DAMAGE, BASE_ATTACK_SPEED, settings);
+    }
+
+    public SunforgedScimitarItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
+        super(toolMaterial, attackDamage, attackSpeed, settings);
+    }
+
+    @Override
+    public float getMiningSpeedMultiplier(ItemStack stack, BlockState state) {
+        if (state.isOf(Blocks.SAND) || state.isOf(Blocks.RED_SAND) || state.isOf(Blocks.SUSPICIOUS_SAND)) {
+            return SAND_MINING_SPEED;
+        }
+        return super.getMiningSpeedMultiplier(stack, state);
+    }
+
+    @Override
+    public boolean isSuitableFor(BlockState state) {
+        if (state.isOf(Blocks.SAND) || state.isOf(Blocks.RED_SAND) || state.isOf(Blocks.SUSPICIOUS_SAND)) {
+            return true;
+        }
+        return super.isSuitableFor(state);
+    }
+
+    @Override
+    public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        super.postHit(stack, target, attacker);
+        World world = attacker.getWorld();
+
+        if (!world.isClient()) {
+            // Passive sunlight vs undead bonus damage
+            if (target.getGroup() == EntityGroup.UNDEAD) {
+                if (world.isDay() && !world.isRaining() && world.isSkyVisible(attacker.getBlockPos())
+                        && world.getLightLevel(LightType.SKY, attacker.getBlockPos()) >= 12) {
+                    target.damage(attacker.getDamageSources().magic(), BONUS_UNDEAD_DAMAGE);
+                }
+            }
+
+            // Passive heat bonus damage at high heat threshold
+            int heat = getHeatLevel(stack);
+            if (heat >= HEAT_DAMAGE_THRESHOLD) {
+                target.damage(attacker.getDamageSources().onFire(), HEAT_BONUS_DAMAGE);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+        ItemStack stack = user.getStackInHand(hand);
+        user.setCurrentHand(hand);
+        return TypedActionResult.consume(stack);
+    }
+
+    @Override
+    public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+        if (!(user instanceof PlayerEntity player)) return;
+        if (world.isClient()) return;
+
+        int chargeTicks = getMaxUseTime(stack) - remainingUseTicks;
+        if (chargeTicks < MIN_CHARGE_TICKS) return;
+
+        float chargeRatio = Math.min(1.0f, (float) chargeTicks / MAX_CHARGE_TICKS);
+
+        // Spawn solar arc projectile with speed scaled by charge and Solar Core upgrade level
+        SolarArcEntity projectile = new SolarArcEntity(world, player, stack);
+        net.minecraft.util.math.Vec3d look = player.getRotationVec(1.0F);
+        projectile.setPosition(player.getX() + look.x * 0.5, player.getEyeY() - 0.1 + look.y * 0.5, player.getZ() + look.z * 0.5);
+        float speed = (SolarArcEntity.BASE_SPEED + (SolarArcEntity.CORE_SPEED_BONUS * getSolarCoreLevel(stack))) * (0.5f + chargeRatio * 0.5f);
+        projectile.setVelocity(player, player.getPitch(), player.getYaw(), 0.0F, speed, 0.0F);
+        world.spawnEntity(projectile);
+
+        // Scale damage by charge
+        projectile.setProjectileDamage(projectile.getProjectileDamage() * (0.5f + chargeRatio * 0.5f));
+
+        // Sound effect - pitch varies with charge
+        world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.8F, 1.0f + chargeRatio * 0.4f);
+
+        // Consume 1 durability
+        stack.damage(1, player, (p) -> p.sendToolBreakStatus(player.getActiveHand()));
+
+        // Desert cooldown reduction
+        int cooldown = BASE_COOLDOWN_TICKS;
+        if (world.getBiome(player.getBlockPos()).matchesKey(BiomeKeys.DESERT)) {
+            cooldown = DESERT_COOLDOWN_TICKS;
+        }
+
+        player.getItemCooldownManager().set(this, cooldown);
+    }
+
+    @Override
+    public int getMaxUseTime(ItemStack stack) {
+        return MAX_CHARGE_TICKS;
+    }
+
+    @Override
+    public UseAction getUseAction(ItemStack stack) {
+        return UseAction.BOW;
+    }
+
+    /**
+     * Retrieves the Solar Core upgrade level from item NBT (defaults to 0).
+     */
+    public static int getSolarCoreLevel(ItemStack stack) {
+        if (stack.hasNbt() && stack.getNbt().contains("SolarCoreLevel")) {
+            return stack.getNbt().getInt("SolarCoreLevel");
+        }
+        return 0;
+    }
+
+    /**
+     * Sets the Solar Core upgrade level on item NBT.
+     * TODO: When the Solar Core upgrade item is combined with this scimitar
+     * (e.g. via Smithing Table, Anvil, Crafting, or Custom Upgrade Station),
+     * call setSolarCoreLevel(stack, currentLevel + 1) to upgrade it.
+     */
+    public static void setSolarCoreLevel(ItemStack stack, int level) {
+        stack.getOrCreateNbt().putInt("SolarCoreLevel", Math.max(0, level));
+    }
+
+    /**
+     * Retrieves the current environmental Heat level from item NBT.
+     */
+    public static int getHeatLevel(ItemStack stack) {
+        if (stack.hasNbt() && stack.getNbt().contains("Heat")) {
+            return stack.getNbt().getInt("Heat");
+        }
+        return 0;
+    }
+
+    /**
+     * Sets the current environmental Heat level on item NBT.
+     */
+    public static void setHeatLevel(ItemStack stack, int heat) {
+        stack.getOrCreateNbt().putInt("Heat", Math.max(0, Math.min(MAX_HEAT, heat)));
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        super.appendTooltip(stack, world, tooltip, context);
+        tooltip.add(Text.literal("Heat Level: " + getHeatLevel(stack) + " / " + MAX_HEAT).formatted(Formatting.RED));
+        int coreLevel = getSolarCoreLevel(stack);
+        if (coreLevel > 0) {
+            tooltip.add(Text.literal("Solar Core Level: " + coreLevel).formatted(Formatting.GOLD));
+        }
+    }
+}

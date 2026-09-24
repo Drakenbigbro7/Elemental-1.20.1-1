@@ -1,0 +1,28 @@
+package com.elemental.item;
+
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
+
+public class ModItems {
+    public static final Item SUNFORGED_SCIMITAR = Registry.register(
+            Registries.ITEM,
+            new Identifier("elemental", "sunforged_scimitar"),
+            new SunforgedScimitarItem(
+                    ScimitarToolMaterial.INSTANCE,
+                    SunforgedScimitarItem.BASE_ATTACK_DAMAGE,
+                    SunforgedScimitarItem.BASE_ATTACK_SPEED,
+                    new FabricItemSettings().maxDamage(SunforgedScimitarItem.DURABILITY).rarity(Rarity.COMMON)
+            )
+    );
+
+    public static void registerModItems() {
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(SUNFORGED_SCIMITAR));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(SUNFORGED_SCIMITAR));
+    }
+}

@@ -1,0 +1,81 @@
+package com.elemental.util;
+
+import com.elemental.item.SunforgedScimitarItem;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BiomeTags;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.LightType;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
+
+public class SunforgedHeatHandler {
+    // Process heat ticking once per second (20 ticks) for performance and subtle accumulation
+    public static final int HEAT_TICK_INTERVAL = 20;
+    private static int tickCounter = 0;
+
+    public static void register() {
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter++;
+            if (tickCounter >= HEAT_TICK_INTERVAL) {
+                tickCounter = 0;
+                processHeat(server);
+            }
+        });
+    }
+
+    private static void processHeat(MinecraftServer server) {
+        if (server == null || server.getPlayerManager() == null) {
+            return;
+        }
+
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (player == null || player.isSpectator() || !player.isAlive()) {
+                continue;
+            }
+
+            World world = player.getWorld();
+            if (world == null) {
+                continue;
+            }
+
+            checkAndApplyHeat(player, player.getMainHandStack(), world);
+            checkAndApplyHeat(player, player.getOffHandStack(), world);
+        }
+    }
+
+    private static void checkAndApplyHeat(ServerPlayerEntity player, ItemStack stack, World world) {
+        if (stack != null && !stack.isEmpty() && stack.getItem() instanceof SunforgedScimitarItem) {
+            RegistryEntry<Biome> biomeEntry = world.getBiome(player.getBlockPos());
+            float temperature = biomeEntry.value().getTemperature();
+            boolean isHotBiome = temperature >= 1.0f
+                    || biomeEntry.isIn(BiomeTags.IS_BADLANDS)
+                    || biomeEntry.matchesKey(BiomeKeys.DESERT)
+                    || biomeEntry.matchesKey(BiomeKeys.SAVANNA)
+                    || biomeEntry.matchesKey(BiomeKeys.SAVANNA_PLATEAU)
+                    || biomeEntry.matchesKey(BiomeKeys.WINDSWEPT_SAVANNA);
+
+            boolean isDirectSunlight = world.isDay()
+                    && !world.isRaining()
+                    && world.isSkyVisible(player.getBlockPos())
+                    && world.getLightLevel(LightType.SKY, player.getBlockPos()) >= 12;
+
+            int currentHeat = SunforgedScimitarItem.getHeatLevel(stack);
+
+            if (isHotBiome && isDirectSunlight) {
+                currentHeat = Math.min(SunforgedScimitarItem.MAX_HEAT, currentHeat + SunforgedScimitarItem.HEAT_GAIN_RATE);
+            } else {
+                currentHeat = Math.max(0, currentHeat - SunforgedScimitarItem.HEAT_DECAY_RATE);
+            }
+
+            SunforgedScimitarItem.setHeatLevel(stack, currentHeat);
+
+            if (currentHeat >= SunforgedScimitarItem.HEAT_DAMAGE_THRESHOLD && SunforgedScimitarItem.SELF_DAMAGE_ENABLED) {
+                player.damage(player.getDamageSources().hotFloor(), SunforgedScimitarItem.HEAT_SELF_DAMAGE);
+            }
+        }
+    }
+}
