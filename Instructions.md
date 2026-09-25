@@ -1,8 +1,9 @@
-You are generating code for a Fabric Loader mod for Minecraft 1.20.1.
-The mod already has a working template: initialization class, item registry pattern, data/asset folders, and build config.
-Do not rewrite the whole mod. Only add/modify the files needed to implement the item below perfectly within the existing template.
+You are generating code for a Fabric Loader mod targeting Minecraft 1.20.1.
+The project already has a tool/weapon template system (base classes, registration helpers, data components, etc.).
+Your job is to only create the files and logic specific to one new item: the Frostwake Pick.
+Changing gradle files and other item files or files not related to Frostwake Pick strictly probihited
 
-Mod environment (do not change these):
+Use these exact environment versions:
 
 text
 minecraft_version=1.20.1
@@ -12,347 +13,308 @@ loom_version=1.18-SNAPSHOT
 fabric_api_version=0.92.12+1.20.1
 Assume:
 
-Java 17.
+The mod ID is elemental
 
-Standard Fabric project layout (src/main/java, src/main/resources).
+There is already:
 
-An existing ModInitializer and an existing item registry class (e.g. ModItems) using Registry.register(Registries.ITEM, id, item) with Item.Settings.
+A base tool/weapon class or interface that your item should extend/implement.
 
-Existing data generators or manual data folders for tags, recipes, etc.
+A central item registration class (e.g. ModItems) with a helper method to register items.
 
-You can create new Java classes under the mod’s main package (e.g. com.example.mod.item or whatever the template uses).
+A standard resource layout for models, textures, and lang files.
 
-You can add/modify JSONs under resources/assets/<modid> and resources/data/<modid>.
+You must not rewrite the entire mod; only add what’s needed for this one item to work perfectly within the existing template.
 
-Item to implement: Sunforged Scimitar
-Base identity
+Item overview
+Name: Frostwake Pick
+Type: Hybrid tool/weapon (pickaxe-like mining + heavy melee weapon).
+Core fantasy: Ice-themed pick that freezes water, mines ice/snow blocks well, slows enemies, and can freeze an area.
 
-Item ID: sunforged_scimitar
+Functions
+Tool function
 
-Display name: Sunforged Scimitar
+Mines these blocks efficiently (faster than normal pickaxe or with special behavior):
 
-Type: custom sword-like melee weapon that also functions as a shovel for specific blocks.
+minecraft:ice
 
-Max durability: choose a balanced value (e.g. 250–350) and expose as a constant.
+minecraft:packed_ice
 
-Stack size: 1.
+minecraft:blue_ice
 
-Rarity: common (unless your template uses a rarity system; then pick an appropriate one).
+Snow-related blocks:
 
-Core behavior requirements
+minecraft:snow
 
-Tool function – sand digging
+minecraft:snow_block
 
-When used on the following blocks, it should mine them as efficiently as a shovel:
+minecraft:powder_snow
 
-minecraft:sand
+Should still be able to mine normal stone/ores as a pickaxe if your template expects that; tune mining speed/durability to feel like a late-game pick.
 
-minecraft:red_sand
+Weapon function
 
-minecraft:suspicious_sand
+Heavy, slow attack:
 
-For all other blocks, it should behave like a sword (no special mining speed).
+Higher attack damage than a standard diamond/netherite pick.
 
-Implement this by:
+Slower attack speed (longer cooldown).
 
-Creating a custom ToolMaterial for the scimitar (or reusing an existing one if the template suggests).
+Implement using Fabric/1.20.1 mechanics for tool materials and/or custom item attack attributes.
 
-Ensuring the item is tagged as a shovel in Fabric tool tags so it works with modded sand-like blocks if applicable: fabric:shovels.
-
-Overriding getMiningSpeedMultiplier (or the 1.20.1 equivalent in Yarn) to give high speed only for sand, red_sand, and suspicious_sand.
-
-Weapon function – fast melee attack
-
-Behave as a sword with:
-
-Slightly higher attack speed than a normal diamond/netherite sword (e.g. attack speed ~1.8–2.0 instead of 1.6).
-
-Damage around diamond-tier or slightly above (e.g. 7–8 base damage), tunable via constants.
-
-Use SwordItem as a base or implement similar logic in a custom item class that extends SwordItem.
-
-Ensure the item is tagged as fabric:swords.
-
-Passive – bonus damage to undead in sunlight
+Passive effect: Chill
 
 When hitting an entity:
 
-If the entity is undead (zombie, skeleton, wither skeleton, drowned, phantoms, etc. – use the EntityTags or EntityType undead check available in 1.20.1 Yarn),
+Apply a short Slowness effect (e.g. Slowness I for 1–2 seconds).
 
-And the attacker (player) is in direct sunlight (sky-visible, day time, not raining, not under a roof),
+Repeated hits increase the slow duration or level slightly, up to a cap.
 
-Then add bonus magic/fire-like damage (e.g. +2–4 damage).
+Use Minecraft’s status effect system (MobEffects.MOVEMENT_SLOWDOWN or the mapped name in 1.20.1 yarn).
 
-Implement this by overriding postHit (or the appropriate combat hook in 1.20.1) in your custom item class.
+Ensure this does not apply to bosses (see limitations).
 
-Use the world’s lighting / sky access methods to determine “sunlight” (e.g. World.isDay(), World.isSkyVisible, local light level checks).
+Active ability: Frostburst
 
-Apply the extra damage as magic or fire damage, not plain attack damage, so it interacts correctly with armor/resistance.
+Activation method:
 
-Active ability – solar arc projectile
+Right-click (or use a keybound “ability use” if your template supports it).
 
-Right-click (use item) to fire a short-range solar arc projectile:
+Effect:
 
-Visual: a small, bright, orange/yellow projectile that travels in a straight line for a short distance/time.
+Creates a small spherical area around the player where:
 
-On hit:
+Entities are briefly slowed/frozen (stronger Slowness or short Freeze-like behavior if your mod has a custom effect).
 
-Deals moderate magic/fire damage to the entity.
+Water blocks in a small radius turn to ice (or frosted ice if available).
 
-Sets the target on fire for a short duration (e.g. 3–5 seconds).
+Visual/audio feedback (particles, sound) if your template has helpers for that.
 
 Cooldown:
 
-Use Minecraft’s built-in item cooldown system (player.getItemCooldownManager().set(this, cooldownTicks)).
+Global cooldown on the item (use ItemCooldownManager or your template’s cooldown system).
 
-Base cooldown: e.g. 200–300 ticks (10–15 seconds), exposed as a constant.
+Limitation:
 
-Implementation details:
+The freeze/slow part of this ability does not affect boss entities.
 
-Create a custom Entity class for the solar arc projectile (e.g. SolarArcEntity) that extends ThrowableProjectile or AbstractArrow-like class appropriate for 1.20.1.
+Boss detection can be done via entity tags, a boss flag, or your mod’s existing boss classification if present.
 
-Register the entity in your mod’s entity registry.
+Biome interaction: Snowbound Efficiency
 
-On right-click:
+When the player is in a snowy/cold biome:
 
-Consume 1 durability from the scimitar.
+Reduce the active ability cooldown.
 
-Spawn the projectile at the player’s eye position, with direction from player rotation.
+Optionally slightly increase mining speed on ice/snow blocks.
 
-Put the item on cooldown.
+Use biome tags like #minecraft:is_snowy or equivalent in 1.20.1.
 
-Limitations:
+Limitations
 
-If the player is in rain or in water, the projectile:
+Freeze/slow effects from both passive and active:
 
-Deals reduced damage (e.g. 50%).
+Do not apply to boss entities.
 
-Has shorter fire duration (e.g. 1–2 seconds instead of 3–5).
+Active ability should not be spammable; enforce cooldown strictly.
 
-Optionally, shorter travel distance/lifetime.
+Upgrade path: Glacial Core
 
-Detect rain via World.isRaining() and whether the entity’s position is exposed to rain; detect water via isInWater().
+Design the item so it can be upgraded via an item/component called Glacial Core.
 
-Biome interaction – desert cooldown reduction
+When upgraded:
 
-When the player is in a desert biome (minecraft:desert and related desert biome tags if available):
+Increase the radius of the Frostburst area.
 
-Reduce the active ability cooldown by a fixed percentage or fixed ticks (e.g. 25% less cooldown).
+Optionally increase the slow strength or duration slightly.
 
-Implement this by checking the player’s current biome when applying the cooldown and adjusting the ticks accordingly.
+Implementation options (choose what fits your template best):
 
-Upgrade – Solar Core
+A data component on the item (e.g. glacial_core_installed boolean).
 
-Design the item so it can be upgraded via a “Solar Core” upgrade item (you do not need to fully implement the upgrade item now, but structure the code to support it).
+An NBT/component-based upgrade system already present in the mod.
 
-The upgrade should:
+Provide logic to:
 
-Increase solar arc range (e.g. longer lifetime or higher velocity).
+Check if the upgrade is installed.
 
-Increase fire burn duration on hit.
+Adjust ability radius/strength accordingly.
 
-Implementation approach:
+What you must generate
+Create only the files and code necessary to integrate this item into the existing template. Typical outputs:
 
-Add an NBT tag (e.g. SolarCoreLevel int) to the scimitar.
+Item class
 
-Provide a method getSolarCoreLevel(ItemStack stack) that returns 0 by default and >0 if upgraded.
+e.g. FrostwakePickItem.java (or .kt if your template uses Kotlin).
 
-Use this value to scale projectile speed/lifetime and fire duration.
+Extends/implements the mod’s base tool/weapon class/interface.
 
-Leave a clear TODO/comment where the upgrade item would modify this NBT (e.g. via anvil, crafting, or custom upgrade station).
+Implements:
 
-Heat damage (passive environmental effect)
+Mining behavior for ice/snow blocks.
 
-While holding the Sunforged Scimitar:
+Attack damage/speed tuning.
 
-If the player is in a hot biome (e.g. desert, badlands, savanna – use biome temperature or specific biome tags),
+Passive chill on hit.
 
-And in direct sunlight during the day,
-
-The item very slowly gains “heat” over time (tracked via NBT or a component).
-
-At high heat levels, the item may:
-
-Deal slight extra damage (optional).
-
-Or cause minor self-damage to the holder if you want a risk/reward mechanic (make this configurable via a constant).
-
-Implement a simple server-side tick handler that:
-
-Runs each tick for players holding this item.
-
-Updates a Heat NBT value.
-
-Applies effects based on thresholds.
-
-Keep this effect subtle and tunable via constants.
-
-Files you must create/modify
-Work within the existing template’s package structure. If the template uses com.example.mod, adapt accordingly.
-
-Java – item class
-
-Create: SunforgedScimitarItem.java
-
-Extend SwordItem.
-
-Implement:
-
-Custom mining speed for sand/red_sand/suspicious_sand.
-
-Passive sunlight vs undead bonus damage in postHit.
-
-Right-click behavior to fire solar arc and apply cooldown.
+Active ability on right-click/use.
 
 Biome-based cooldown reduction.
 
-Heat NBT logic hooks (you may delegate ticking to a separate class).
+Upgrade logic for Glacial Core.
 
-Expose all numeric values as private static final constants at the top of the class for easy tuning.
+Uses 1.20.1 yarn mappings consistent with:
 
-Java – projectile entity
+minecraft_version=1.20.1
 
-Create: SolarArcEntity.java
+yarn_mappings=1.20.1+build.10
 
-Extend an appropriate projectile class for 1.20.1 (e.g. ThrowableProjectile or similar).
+Registration snippet
 
-Implement:
+Code to register FrostwakePickItem in the mod’s item registry, e.g. in ModItems.java:
 
-Movement, lifetime, collision.
+A static field public static final Item FROSTWAKE_PICK.
 
-Damage on hit (with rain/water reduction).
+A call to your existing register(...) helper.
 
-Fire application (with rain/water reduction).
+Ensure the item’s Item.Properties / Item.Settings match your template (max stack size 1, durability, etc.).
 
-Use SolarCoreLevel from the shooter’s held item to adjust range and burn duration.
+Data components / NBT (if needed)
 
-Register this entity in your mod’s entity registry class (create or edit ModEntities.java if needed):
+If your mod uses data components for upgrades:
 
-Define EntityType<SolarArcEntity>.
+Define or reference a component like GLACIAL_CORE_INSTALLED.
 
-Register under Registries.ENTITY_TYPE.
+Show how it’s added/checked on the Frostwake Pick.
 
-Provide spawn egg / creative spawn if your template expects it (optional).
+If using NBT instead, provide methods to read/write the upgrade flag.
 
-Java – heat tick handler
+Cooldown & ability logic
 
-Create: SunforgedHeatHandler.java (or similar)
+Use ItemCooldownManager (or your template’s cooldown system) to:
 
-Implement a server tick event (via Fabric API’s ServerTickEvents or equivalent in 1.20.1).
+Start cooldown on ability use.
 
-Each tick:
+Reduce cooldown when in snowy biomes.
 
-For each player, if holding SunforgedScimitarItem:
+Ensure boss entities are excluded from freeze/slow effects.
 
-Check biome temperature / type.
+Resources
 
-Check sunlight & day.
+Provide JSON/lang entries:
 
-Update Heat NBT on the item.
+assets/yourmodid/lang/en_us.json:
 
-Apply optional effects at thresholds.
+"item.yourmodid.frostwake_pick": "Frostwake Pick"
 
-Keep logic efficient and null-safe.
+Ability tooltip lines if your template uses dynamic tooltips.
 
-Item registration
+Model and texture paths (you don’t need to draw the texture, just specify):
 
-In your existing ModItems (or equivalent) class:
+assets/yourmodid/models/item/frostwake_pick.json
 
-Register SUNFORGED_SCIMITAR:
+assets/yourmodid/textures/item/frostwake_pick.png
 
-Using SunforgedScimitarItem with appropriate Item.Settings (durability, fire resistant if desired, etc.).
+If your template uses data-driven tooltips or ability descriptions, add the necessary JSON fields.
 
-Ensure the item’s RegistryKey is correctly stored in settings if your template requires it.
+Integration points
 
-Add the item to the TOOLS item group via ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS) if your template uses that pattern.
+Clearly mark where this item plugs into:
 
-Tags
+The mod’s creative tab / item group.
 
-In fabric:shovels and fabric:swords item tags:
+Any loot table injections or recipe helpers if your template uses them (optional).
 
-Add sunforged_scimitar so it works properly with other mods and recipes.
+Do not redefine global systems; just call existing helpers.
 
-If your template uses a tag provider, add entries there; otherwise create/modify JSON tag files under data/fabric/tags/item.
+Coding constraints and style
+Target Minecraft 1.20.1 with Fabric API 0.92.12+1.20.1.
 
-Assets
+Use yarn 1.20.1+build.10 mappings.
 
-Create/modify:
+Follow the existing template’s:
 
-assets/<modid>/textures/item/sunforged_scimitar.png – placeholder texture description (you can just describe what the texture should look like if you’re not generating images).
+Package structure (e.g. com.yourname.yourmod.item, ...component, etc.).
 
-assets/<modid>/models/item/sunforged_scimitar.json – using item/handheld parent with the texture.
+Naming conventions.
 
-assets/<modid>/lang/en_us.json – add translation:
+Registration patterns.
 
-"item.<modid>.sunforged_scimitar": "Sunforged Scimitar"
+Keep code clean, well-commented where non-obvious, and consistent with Java 17 (the version used by 1.20.1).
 
-If your template uses additional languages, add keys accordingly.
+Do not include build.gradle or fabric.mod.json changes unless absolutely required for this item; assume those are already configured for custom items/components.
 
-Recipes (optional but recommended)
+Behavior details to implement
+Implement the following logic precisely:
 
-Provide at least one example crafting recipe JSON under data/<modid>/recipes/:
+Mining:
 
-For sunforged_scimitar, using plausible materials (e.g. sun-related items, gold, blaze rods, etc.).
+When mining ice/packed_ice/blue_ice/snow/powder_snow:
 
-Use shapeless or shaped recipe as fits your mod’s theme.
+Use a higher mining speed than normal.
 
-Ensure the recipe matches 1.20.1 format (data/<modid>/recipes/, not recipe singular).
+Ensure correct tool type so these blocks drop properly.
 
-Configuration hooks
+Attack:
 
-At the top of SunforgedScimitarItem and SolarArcEntity, define constants for:
+Set attack damage and speed to feel “heavy”:
 
-Base damage, attack speed.
+More damage than netherite pick.
 
-Durability.
+Slower attack speed.
 
-Cooldown ticks (base and desert-reduced).
+Passive chill:
 
-Fire durations (normal, rain/water reduced, solar-core increased).
+On entity hit:
 
-Projectile speed, lifetime, and solar-core multipliers.
+If entity is not a boss:
 
-Heat gain rate, thresholds, and effects.
+Apply Slowness I for ~1.5s.
 
-Add comments explaining each constant so designers can tune them without reading logic.
+If the entity already has this chill debuff from this item within a short window, increase level or duration slightly, up to a cap (e.g. Slowness II max).
 
-Coding constraints & style
-Target Minecraft 1.20.1 with Yarn mappings 1.20.1+build.10.
+Active Frostburst:
 
-Use Fabric API 0.92.12+1.20.1 features where helpful (e.g. item groups, tags, events).
+On right-click:
 
-Do not use mixins unless absolutely necessary; prefer event hooks and overrides.
+If not on cooldown:
 
-Keep code clean, null-safe, and consistent with typical Fabric examples.
+Determine radius:
 
-Use clear method names and short Javadoc-style comments for public methods.
+Base radius (e.g. 3 blocks).
 
-Do not change existing unrelated items or systems in the template.
+If Glacial Core installed: larger radius (e.g. 5 blocks).
 
-Assume the build system (Gradle, Fabric Loom) is already configured correctly.
+For each entity in radius:
+
+If not boss:
+
+Apply stronger Slowness (e.g. Slowness II–III for 3–4s) or a freeze-like effect if your mod defines one.
+
+For each water block in radius:
+
+Convert to ice (or frosted ice if you want extra flavor and it’s safe).
+
+Spawn particles/sound if helpers exist.
+
+Start cooldown:
+
+Base cooldown (e.g. 15 seconds).
+
+If in snowy biome: reduce cooldown (e.g. to 10 seconds).
+
+Boss immunity:
+
+No slow/freeze effects on bosses from either passive or active.
 
 Output format
-Produce:
+Return:
 
-The full contents of each new/modified Java file, with package declarations matching a generic mod package (e.g. com.example.mod.item, com.example.mod.entity, com.example.mod.util), clearly labeled with file paths as comments at the top.
+Full file contents for each new file, with:
 
-The JSON contents for:
+A comment at the top with the file path (e.g. // File: src/main/java/com/yourname/yourmod/item/FrostwakePickItem.java).
 
-Item model.
+Short notes where you assume something about the template (e.g. “Assumes ModComponents.GLACIAL_CORE_INSTALLED exists; adapt name if needed.”).
 
-Language file entries.
-
-Tag files (if not using a tag provider).
-
-Example recipe(s).
-
-Short notes on:
-
-Where to register the entity type.
-
-Where to hook the server tick event for heat.
-
-Any assumptions you made about the existing template.
-
-Do not include explanations about how Fabric works; only output the code and minimal notes necessary to integrate this item into an existing 1.20.1 Fabric mod template.
+Do not explain basic Fabric setup; focus only on the Frostwake Pick implementation within the existing template.
+create .md file to explain the logic and explain the weapons ability
 

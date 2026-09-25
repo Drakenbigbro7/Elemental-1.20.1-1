@@ -1,5 +1,6 @@
 package com.elemental.item;
 
+import com.elemental.Elemental;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
@@ -20,9 +21,21 @@ public class ModItems {
                     new FabricItemSettings().maxDamage(SunforgedScimitarItem.DURABILITY).rarity(Rarity.COMMON)
             )
     );
+    public static final Item FROSTWAKE_PICK = Registry.register(
+            Registries.ITEM,
+            new Identifier(Elemental.MOD_ID,"frostwake_pick"),
+            new FrostwakePickItem(
+                    FrostwakePickToolMaterial.INSTANCE,
+                    FrostwakePickItem.BASE_ATTACK_DAMAGE,
+                    FrostwakePickItem.BASE_ATTACK_SPEED,
+                    new FabricItemSettings().maxDamage(FrostwakePickItem.DURABILITY).rarity(Rarity.COMMON)
+            )
+    );
 
     public static void registerModItems() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(SUNFORGED_SCIMITAR));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(SUNFORGED_SCIMITAR));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(FROSTWAKE_PICK));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(FROSTWAKE_PICK));
     }
 }
