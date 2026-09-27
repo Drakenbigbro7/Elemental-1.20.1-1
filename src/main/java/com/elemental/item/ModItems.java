@@ -31,11 +31,23 @@ public class ModItems {
                     new FabricItemSettings().maxDamage(FrostwakePickItem.DURABILITY).rarity(Rarity.COMMON)
             )
     );
+    public static final Item ROOTBOUND_AXE = Registry.register(
+            Registries.ITEM,
+            new Identifier(Elemental.MOD_ID, "rootbound_axe"),
+            new RootboundAxeItem(
+                    RootboundAxeToolMaterial.INSTANCE,
+                    RootboundAxeItem.BASE_ATTACK_DAMAGE,
+                    RootboundAxeItem.BASE_ATTACK_SPEED,
+                    new FabricItemSettings().maxDamage(RootboundAxeItem.DURABILITY).rarity(Rarity.COMMON)
+            )
+    );
 
     public static void registerModItems() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(SUNFORGED_SCIMITAR));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(SUNFORGED_SCIMITAR));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(FROSTWAKE_PICK));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(FROSTWAKE_PICK));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(ROOTBOUND_AXE));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ROOTBOUND_AXE));
     }
 }
