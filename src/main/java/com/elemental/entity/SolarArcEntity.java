@@ -2,18 +2,23 @@ package com.elemental.entity;
 
 import com.elemental.item.SunforgedScimitarItem;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class SolarArcEntity extends PersistentProjectileEntity implements FlyingItemEntity {
+public class SolarArcEntity extends PersistentProjectileEntity implements GeoEntity {
     // Base travel speed of the solar arc projectile
     public static final float BASE_SPEED = 1.5f;
     // Additional speed per Solar Core upgrade level
@@ -32,6 +37,11 @@ public class SolarArcEntity extends PersistentProjectileEntity implements Flying
     public static final int RAIN_FIRE_SECONDS = 1;
     // Additional seconds of fire applied per Solar Core upgrade level
     public static final int CORE_FIRE_BONUS_SECONDS = 2;
+
+    private static final RawAnimation TRAVEL_ANIM = RawAnimation.begin().thenLoop("animation.solar_arc.travel");
+    private static final RawAnimation IMPACT_ANIM = RawAnimation.begin().thenPlay("animation.solar_arc.impact");
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int solarCoreLevel = 0;
     private int lifetimeTicks = 0;
@@ -65,6 +75,18 @@ public class SolarArcEntity extends PersistentProjectileEntity implements Flying
         if (owner.isTouchingWater() || (world.isRaining() && world.isSkyVisible(owner.getBlockPos()))) {
             this.weakenedByWeather = true;
         }
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, state -> {
+            return state.setAndContinue(TRAVEL_ANIM);
+        }).triggerableAnim("impact", IMPACT_ANIM));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override
@@ -105,12 +127,16 @@ public class SolarArcEntity extends PersistentProjectileEntity implements Flying
                 boolean wetConditions = this.weakenedByWeather
                         || this.isTouchingWater()
                         || (this.getWorld().isRaining() && this.getWorld().isSkyVisible(this.getBlockPos()));
-                float damage = wetConditions ? (this.damage * RAIN_DAMAGE_MULTIPLIER) : this.damage;
+                float dmg = wetConditions ? (this.damage * RAIN_DAMAGE_MULTIPLIER) : this.damage;
                 int fireSecs = wetConditions ? RAIN_FIRE_SECONDS : (BASE_FIRE_SECONDS + this.solarCoreLevel * CORE_FIRE_BONUS_SECONDS);
 
-                entity.damage(this.getDamageSources().magic(), damage);
+                entity.damage(this.getDamageSources().magic(), dmg);
                 entity.setOnFireFor(fireSecs);
             }
+
+            // Spawn solar burst particles and sound on impact
+            this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.5f, 1.6f);
             this.discard();
         }
     }
@@ -119,6 +145,8 @@ public class SolarArcEntity extends PersistentProjectileEntity implements Flying
     protected void onBlockHit(net.minecraft.util.hit.BlockHitResult blockHitResult) {
         super.onBlockHit(blockHitResult);
         if (!this.getWorld().isClient()) {
+            this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.6f, 1.8f);
             this.discard();
         }
     }
@@ -126,11 +154,6 @@ public class SolarArcEntity extends PersistentProjectileEntity implements Flying
     @Override
     protected ItemStack asItemStack() {
         return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ItemStack getStack() {
-        return new ItemStack(Items.FIRE_CHARGE);
     }
 
     @Override

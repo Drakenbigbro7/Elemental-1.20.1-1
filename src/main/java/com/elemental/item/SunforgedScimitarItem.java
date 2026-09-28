@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.item.ToolMaterial;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -21,10 +22,20 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class SunforgedScimitarItem extends SwordItem {
+public class SunforgedScimitarItem extends SwordItem implements GeoItem {
 
     // Durability of the Sunforged Scimitar (balanced between iron and diamond)
     public static final int DURABILITY = 300;
@@ -76,12 +87,55 @@ public class SunforgedScimitarItem extends SwordItem {
     // Amount of self-damage dealt to the player when heat threshold is exceeded (if enabled)
     public static final float HEAT_SELF_DAMAGE = 1.0f;
 
+    // GeckoLib animation definitions
+    private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.sunforged.idle");
+    private static final RawAnimation HEAT_ANIM = RawAnimation.begin().thenPlay("animation.sunforged.heat");
+    private static final RawAnimation CHARGE_ANIM = RawAnimation.begin().thenLoop("animation.sunforged.charge");
+    private static final RawAnimation RELEASE_ANIM = RawAnimation.begin().thenPlay("animation.sunforged.release");
+    private static final RawAnimation COOLDOWN_ANIM = RawAnimation.begin().thenPlay("animation.sunforged.cooldown");
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
+
+    // Client renderer hook
+    public static Consumer<Consumer<Object>> RENDER_PROVIDER_CONSUMER;
+
     public SunforgedScimitarItem(Settings settings) {
         super(ScimitarToolMaterial.INSTANCE, BASE_ATTACK_DAMAGE, BASE_ATTACK_SPEED, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
     public SunforgedScimitarItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
         super(toolMaterial, attackDamage, attackSpeed, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
+    }
+
+    @Override
+    public void createRenderer(Consumer<Object> consumer) {
+        if (RENDER_PROVIDER_CONSUMER != null) {
+            RENDER_PROVIDER_CONSUMER.accept(consumer);
+        }
+    }
+
+    @Override
+    public Supplier<Object> getRenderProvider() {
+        return this.renderProvider;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 4, state -> {
+            return state.setAndContinue(IDLE_ANIM);
+        }).triggerableAnim("charge", CHARGE_ANIM)
+          .triggerableAnim("release", RELEASE_ANIM)
+          .triggerableAnim("cooldown", COOLDOWN_ANIM)
+          .triggerableAnim("heat", HEAT_ANIM)
+          .triggerableAnim("idle", IDLE_ANIM));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override
@@ -127,6 +181,11 @@ public class SunforgedScimitarItem extends SwordItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
         user.setCurrentHand(hand);
+
+        if (world instanceof ServerWorld serverWorld) {
+            long id = GeoItem.getOrAssignId(stack, serverWorld);
+            triggerAnim(user, id, "controller", "charge");
+        }
         return TypedActionResult.consume(stack);
     }
 
@@ -154,6 +213,12 @@ public class SunforgedScimitarItem extends SwordItem {
         // Sound effect - pitch varies with charge
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.8F, 1.0f + chargeRatio * 0.4f);
+
+        // Trigger GeckoLib release animation
+        if (world instanceof ServerWorld serverWorld) {
+            long id = GeoItem.getOrAssignId(stack, serverWorld);
+            triggerAnim(player, id, "controller", "release");
+        }
 
         // Consume 1 durability
         stack.damage(1, player, (p) -> p.sendToolBreakStatus(player.getActiveHand()));
@@ -189,9 +254,6 @@ public class SunforgedScimitarItem extends SwordItem {
 
     /**
      * Sets the Solar Core upgrade level on item NBT.
-     * TODO: When the Solar Core upgrade item is combined with this scimitar
-     * (e.g. via Smithing Table, Anvil, Crafting, or Custom Upgrade Station),
-     * call setSolarCoreLevel(stack, currentLevel + 1) to upgrade it.
      */
     public static void setSolarCoreLevel(ItemStack stack, int level) {
         stack.getOrCreateNbt().putInt("SolarCoreLevel", Math.max(0, level));

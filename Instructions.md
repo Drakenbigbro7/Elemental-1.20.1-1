@@ -1,320 +1,237 @@
-You are generating code for a Fabric Loader mod targeting Minecraft 1.20.1.
-The project already has a tool/weapon template system (base classes, registration helpers, data components, etc.).
-Your job is to only create the files and logic specific to one new item: the Frostwake Pick.
-Changing gradle files and other item files or files not related to Frostwake Pick strictly probihited
+You are an expert Minecraft Fabric mod developer. The mod targets Minecraft 1.20.1 with these versions:
 
-Use these exact environment versions:
-
-text
 minecraft_version=1.20.1
+
 yarn_mappings=1.20.1+build.10
+
 loader_version=0.19.5
+
 loom_version=1.18-SNAPSHOT
+
 fabric_api_version=0.92.12+1.20.1
-Assume:
 
-The mod ID is elemental
+The mod already has:
 
-There is already:
+A working Fabric project structure (Gradle, fabric.mod.json, main mod class, etc.).
 
-A base tool/weapon class or interface that your item should extend/implement.
+A template system for items (base classes, registration helpers, data generators, models, lang, etc.).
 
-A central item registration class (e.g. ModItems) with a helper method to register items.
+Existing examples of custom tools and weapons using the same pattern.
 
-A standard resource layout for models, textures, and lang files.
-
-You must not rewrite the entire mod; only add what’s needed for this one item to work perfectly within the existing template.
+Your task: Generate ONLY the new files and code changes required to add the Rootbound Axe as a new item, using the existing templates and patterns. Do not regenerate unchanged base files. Clearly mark where code should be added or modified in existing files.Do not change any gradle files and other mod files that are not related to rootbound axe
 
 Item overview
-Name: Frostwake Pick
-Type: Hybrid tool/weapon (pickaxe-like mining + heavy melee weapon).
-Core fantasy: Ice-themed pick that freezes water, mines ice/snow blocks well, slows enemies, and can freeze an area.
+Item ID: rootbound_axe
 
-Functions
-Tool function
+Mod ID: <MOD_ID> (use the project’s existing mod ID constant)
 
-Mines these blocks efficiently (faster than normal pickaxe or with special behavior):
+Type: Axe tool + weapon with special behaviors
 
-minecraft:ice
+Base behavior:
 
-minecraft:packed_ice
+Functions as an axe for woodcutting (same mining speed / durability tier as diamond/netherite axe; choose based on existing mod balance).
 
-minecraft:blue_ice
+Has a melee attack with a wide sweep attack similar to vanilla axe sweep, but slightly wider or with a small visual root effect.
 
-Snow-related blocks:
+Passive ability:
 
-minecraft:snow
+On hit or on critical hit, has a configurable chance to spawn a short-lived healing root at the target’s location or near the player.
 
-minecraft:snow_block
+Healing root:
 
-minecraft:powder_snow
+Applies regeneration to nearby entities (configurable radius and duration).
 
-Should still be able to mine normal stone/ores as a pickaxe if your template expects that; tune mining speed/durability to feel like a late-game pick.
+Stronger effect in forest and jungle biomes (e.g., higher amplitude or longer duration).
 
-Weapon function
+Can be destroyed by fire/lava (if an entity standing in it takes fire damage, the root effect ends early or the block/entity representing the root is removed).
 
-Heavy, slow attack:
+Active ability:
 
-Higher attack damage than a standard diamond/netherite pick.
+Right-click (or use keybind if the mod uses ability keys) to create a thorn cage:
 
-Slower attack speed (longer cooldown).
+Spawns a small circular area around the player or targeted block/entity.
 
-Implement using Fabric/1.20.1 mechanics for tool materials and/or custom item attack attributes.
+Entities inside take periodic piercing damage and are slightly slowed.
 
-Passive effect: Chill
+Duration and cooldown are configurable.
 
-When hitting an entity:
+Visuals: thorny vines rising from the ground; use existing particle / sound hooks in the mod if available.
 
-Apply a short Slowness effect (e.g. Slowness I for 1–2 seconds).
+Limitations:
 
-Repeated hits increase the slow duration or level slightly, up to a cap.
+Healing roots are weaker or do not spawn in non-forest/jungle biomes.
 
-Use Minecraft’s status effect system (MobEffects.MOVEMENT_SLOWDOWN or the mapped name in 1.20.1 yarn).
+Roots (both passive and active) are vulnerable to fire: fire/lava damage cancels them early.
 
-Ensure this does not apply to bosses (see limitations).
+Implementation requirements
+Use the existing mod templates for:
 
-Active ability: Frostburst
+Item classes (e.g., BaseToolItem, BaseWeaponItem, or similar).
 
-Activation method:
+Registration (e.g., ModItems.register() pattern).
 
-Right-click (or use a keybound “ability use” if your template supports it).
+Data generation (models, recipes, tags, lang entries).
 
-Effect:
+Capability/attachment systems if the mod uses them (e.g., component data, NBT, or Fabric Data Attachments).
 
-Creates a small spherical area around the player where:
+Generate:
 
-Entities are briefly slowed/frozen (stronger Slowness or short Freeze-like behavior if your mod has a custom effect).
+New Java/Kotlin files (choose the project’s language) for:
 
-Water blocks in a small radius turn to ice (or frosted ice if available).
+RootboundAxeItem (main item class).
 
-Visual/audio feedback (particles, sound) if your template has helpers for that.
+Any helper classes needed, e.g.:
 
-Cooldown:
+HealingRootEffect / HealingRootComponent
 
-Global cooldown on the item (use ItemCooldownManager or your template’s cooldown system).
+ThornCageArea / ThornCageComponent
 
-Limitation:
+If the mod uses components:
 
-The freeze/slow part of this ability does not affect boss entities.
+Component type definitions for root/thorn data.
 
-Boss detection can be done via entity tags, a boss flag, or your mod’s existing boss classification if present.
+Packet handlers if client–server sync is required (e.g., for visuals).
 
-Biome interaction: Snowbound Efficiency
+Modifications to existing files:
 
-When the player is in a snowy/cold biome:
+Item registration file: show exact lines to add for ROOTBOUND_AXE.
 
-Reduce the active ability cooldown.
+Any central config file if abilities need tuning (chance, radius, duration, cooldown).
 
-Optionally slightly increase mining speed on ice/snow blocks.
+Tag files if needed (e.g., #fabric:axes, #minecraft:tools, or custom mod tags).
 
-Use biome tags like #minecraft:is_snowy or equivalent in 1.20.1.
+Lang file entries (en_us.json) for:
 
-Limitations
+Item name: “Rootbound Axe”
 
-Freeze/slow effects from both passive and active:
+Ability tooltips / descriptions.
 
-Do not apply to boss entities.
+Recipe JSON (if using crafting):
 
-Active ability should not be spammable; enforce cooldown strictly.
+Example: shapeless/shapeful recipe using existing mod materials + vanilla sticks/logs.
 
-Upgrade path: Glacial Core
+Model JSON and texture path references (just the file content and paths; assume textures will be added separately if needed).
 
-Design the item so it can be upgraded via an item/component called Glacial Core.
+Behavior details to implement:
 
-When upgraded:
+Woodcutting
+- Inherit from the mod’s axe base class so it:
+- Has correct mining speed on logs/wood.
+- Can strip logs if the base class supports it.
+- No extra logic needed unless the mod has special “fast woodcutting” hooks; if so, integrate with those.
 
-Increase the radius of the Frostburst area.
+Sweep attack
+- Override the attack method to:
+- Perform a sweep similar to vanilla axe but with:
+- Slightly larger angle/radius (configurable).
+- Optional root particle effect along the arc.
+- Respect existing combat attributes (attack damage, attack speed).
 
-Optionally increase the slow strength or duration slightly.
+Passive: Healing root
+- On hit (or crit, depending on design), roll a chance (configurable) to:
+- Spawn a temporary “healing root” at the target’s feet or near the player.
+- Implementation options (pick what fits the mod’s pattern):
+- Place a custom block that emits a regeneration area effect and self-destructs after a duration.
+- Or use an area-effect entity / custom component that applies regeneration each tick.
+- Biome interaction:
+- Check biome at the root’s position.
+- If biome is in forest/jungle family (use BiomeTags or biome registry checks), increase:
+- Regeneration amplifier, and/or
+- Duration.
+- Fire limitation:
+- If the root (block/entity/component) is exposed to fire/lava damage, end its effect early and remove it.
 
-Implementation options (choose what fits your template best):
+Active: Thorn cage
+- On right-click (or ability key):
+- Consume some resource if the mod uses energy/mana/stamina; otherwise just enforce cooldown.
+- Create a thorn cage area:
+- Centered on player or targeted block.
+- Radius: small (e.g., 3–4 blocks).
+- Duration: a few seconds.
+- Each tick:
+- Apply piercing damage to hostile entities inside.
+- Apply slight slowness.
+- Spawn thorn/vine particles.
+- Prevent overlapping cages from the same player (optional, configurable).
+- Add cooldown logic:
+- Prevent spamming; show cooldown in tooltip or HUD if the mod supports it.
 
-A data component on the item (e.g. glacial_core_installed boolean).
+Configuration
 
-An NBT/component-based upgrade system already present in the mod.
+Add entries to the mod’s config (if it has one) for:
 
-Provide logic to:
+Passive trigger chance.
 
-Check if the upgrade is installed.
+Healing root:
 
-Adjust ability radius/strength accordingly.
+Base duration.
 
-What you must generate
-Create only the files and code necessary to integrate this item into the existing template. Typical outputs:
+Base radius.
 
-Item class
+Forest/jungle bonus multiplier.
 
-e.g. FrostwakePickItem.java (or .kt if your template uses Kotlin).
+Thorn cage:
 
-Extends/implements the mod’s base tool/weapon class/interface.
+Radius.
 
-Implements:
+Duration.
 
-Mining behavior for ice/snow blocks.
+Damage per tick.
 
-Attack damage/speed tuning.
+Slow level.
 
-Passive chill on hit.
+Cooldown.
 
-Active ability on right-click/use.
+Provide sensible defaults balanced around diamond/netherite tools.
 
-Biome-based cooldown reduction.
+Tooltips and localization
 
-Upgrade logic for Glacial Core.
+Add tooltip lines explaining:
 
-Uses 1.20.1 yarn mappings consistent with:
+“Wide sweep attack”
 
-minecraft_version=1.20.1
+“Chance to create healing roots (stronger in forests and jungles)”
 
-yarn_mappings=1.20.1+build.10
+“Active: Thorn cage – damages and slows enemies”
 
-Registration snippet
+“Roots are destroyed by fire”
 
-Code to register FrostwakePickItem in the mod’s item registry, e.g. in ModItems.java:
+Use the mod’s existing tooltip style (colors, formatting).
 
-A static field public static final Item FROSTWAKE_PICK.
+Code quality
 
-A call to your existing register(...) helper.
+Follow the existing code style in the mod (naming, formatting, nullability, logging).
 
-Ensure the item’s Item.Properties / Item.Settings match your template (max stack size 1, durability, etc.).
+Use the mod’s existing logging utility if present.
 
-Data components / NBT (if needed)
+Avoid hardcoding; use constants or config values.
 
-If your mod uses data components for upgrades:
-
-Define or reference a component like GLACIAL_CORE_INSTALLED.
-
-Show how it’s added/checked on the Frostwake Pick.
-
-If using NBT instead, provide methods to read/write the upgrade flag.
-
-Cooldown & ability logic
-
-Use ItemCooldownManager (or your template’s cooldown system) to:
-
-Start cooldown on ability use.
-
-Reduce cooldown when in snowy biomes.
-
-Ensure boss entities are excluded from freeze/slow effects.
-
-Resources
-
-Provide JSON/lang entries:
-
-assets/yourmodid/lang/en_us.json:
-
-"item.yourmodid.frostwake_pick": "Frostwake Pick"
-
-Ability tooltip lines if your template uses dynamic tooltips.
-
-Model and texture paths (you don’t need to draw the texture, just specify):
-
-assets/yourmodid/models/item/frostwake_pick.json
-
-assets/yourmodid/textures/item/frostwake_pick.png
-
-If your template uses data-driven tooltips or ability descriptions, add the necessary JSON fields.
-
-Integration points
-
-Clearly mark where this item plugs into:
-
-The mod’s creative tab / item group.
-
-Any loot table injections or recipe helpers if your template uses them (optional).
-
-Do not redefine global systems; just call existing helpers.
-
-Coding constraints and style
-Target Minecraft 1.20.1 with Fabric API 0.92.12+1.20.1.
-
-Use yarn 1.20.1+build.10 mappings.
-
-Follow the existing template’s:
-
-Package structure (e.g. com.yourname.yourmod.item, ...component, etc.).
-
-Naming conventions.
-
-Registration patterns.
-
-Keep code clean, well-commented where non-obvious, and consistent with Java 17 (the version used by 1.20.1).
-
-Do not include build.gradle or fabric.mod.json changes unless absolutely required for this item; assume those are already configured for custom items/components.
-
-Behavior details to implement
-Implement the following logic precisely:
-
-Mining:
-
-When mining ice/packed_ice/blue_ice/snow/powder_snow:
-
-Use a higher mining speed than normal.
-
-Ensure correct tool type so these blocks drop properly.
-
-Attack:
-
-Set attack damage and speed to feel “heavy”:
-
-More damage than netherite pick.
-
-Slower attack speed.
-
-Passive chill:
-
-On entity hit:
-
-If entity is not a boss:
-
-Apply Slowness I for ~1.5s.
-
-If the entity already has this chill debuff from this item within a short window, increase level or duration slightly, up to a cap (e.g. Slowness II max).
-
-Active Frostburst:
-
-On right-click:
-
-If not on cooldown:
-
-Determine radius:
-
-Base radius (e.g. 3 blocks).
-
-If Glacial Core installed: larger radius (e.g. 5 blocks).
-
-For each entity in radius:
-
-If not boss:
-
-Apply stronger Slowness (e.g. Slowness II–III for 3–4s) or a freeze-like effect if your mod defines one.
-
-For each water block in radius:
-
-Convert to ice (or frosted ice if you want extra flavor and it’s safe).
-
-Spawn particles/sound if helpers exist.
-
-Start cooldown:
-
-Base cooldown (e.g. 15 seconds).
-
-If in snowy biome: reduce cooldown (e.g. to 10 seconds).
-
-Boss immunity:
-
-No slow/freeze effects on bosses from either passive or active.
+Add brief JavaDoc/KDoc comments for new public classes/methods.
 
 Output format
-Return:
+Produce your answer as:
 
-Full file contents for each new file, with:
+A short explanation of the approach (2–4 sentences).
 
-A comment at the top with the file path (e.g. // File: src/main/java/com/yourname/yourmod/item/FrostwakePickItem.java).
+For each new file:
 
-Short notes where you assume something about the template (e.g. “Assumes ModComponents.GLACIAL_CORE_INSTALLED exists; adapt name if needed.”).
+A header line: File: <full path relative to src/main/...>
 
-Do not explain basic Fabric setup; focus only on the Frostwake Pick implementation within the existing template.
-create .md file to explain the logic and explain the weapons ability
+Then the full file content in a code block.
 
+For each modified file:
+
+A header line: Modify: <full path>
+
+Show the relevant snippet with clear markers like:
+
+// ADD START
+
+// ADD END
+or
+
+// REPLACE START … // REPLACE END
+
+Only show the changed sections, not the entire file.
+
+Do not include Gradle build changes unless absolutely necessary (e.g., new dependencies). Assume all required Fabric APIs and mod libraries are already configured.
