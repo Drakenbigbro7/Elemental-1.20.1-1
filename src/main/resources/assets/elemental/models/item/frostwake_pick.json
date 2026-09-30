@@ -1,0 +1,45 @@
+{
+  "credit": "Made with Blockbench - Elemental Mod",
+  "parent": "builtin/entity",
+  "texture_size": [64, 64],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [0, -90, 0],
+      "translation": [0, -4, 1],
+      "scale": [0.6, 0.6, 0.6]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [0, 90, 0],
+      "translation": [0, -4, 1],
+      "scale": [0.6, 0.6, 0.6]
+    },
+    "firstperson_righthand": {
+      "rotation": [-11, -90, 20],
+      "translation": [1.5, -2, 3],
+      "scale": [0.55, 0.55, 0.55]
+    },
+    "firstperson_lefthand": {
+      "rotation": [-11, 90, -20],
+      "translation": [1.5, -2, 3],
+      "scale": [0.55, 0.55, 0.55]
+    },
+    "ground": {
+      "rotation": [0, 0, 180],
+      "translation": [0, 6.5, 0],
+      "scale": [0.5, 0.5, 0.5]
+    },
+    "gui": {
+      "rotation": [0, 0, 42],
+      "translation": [4.25, -6.25, 0],
+      "scale": [0.5, 0.5, 0.5]
+    },
+    "head": {
+      "rotation": [0, 90, 0]
+    },
+    "fixed": {
+      "rotation": [43, -90, -31],
+      "translation": [0.25, -2.75, -15],
+      "scale": [0.6, 0.6, 0.6]
+    }
+  }
+}
