@@ -50,16 +50,16 @@ public class FrostwakePickItem extends PickaxeItem {
     public static final float SNOW_MINING_SPEED = 10.0f;
 
     public static final int BASE_COOLDOWN_TICKS = 300;
-    public static final int SNOWY_COOLDOWN_TICKS = 200;
+    public static final int SNOWY_COOLDOWN_TICKS = 300;
 
-    public static final double BASE_RADIUS = 3.0;
-    public static final double UPGRADED_RADIUS = 5.0;
+    public static final double BASE_RADIUS = 10.0;
+    public static final double UPGRADED_RADIUS = 10.0;
 
-    public static final int PASSIVE_SLOW_DURATION = 30;
+    public static final int PASSIVE_SLOW_DURATION = 60;
     public static final int PASSIVE_STACK_DURATION = 15;
     public static final int MAX_PASSIVE_LEVEL = 2;
 
-    public static final int ACTIVE_SLOW_DURATION = 80;
+    public static final int ACTIVE_SLOW_DURATION = 100;
     public static final int ACTIVE_SLOW_LEVEL = 2;
     public static final int ACTIVE_SLOW_LEVEL_UPGRADED = 3;
 
