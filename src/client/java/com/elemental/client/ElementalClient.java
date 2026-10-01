@@ -1,8 +1,10 @@
 package com.elemental.client;
 
+import com.elemental.client.renderer.FrostwakePickRenderer;
 import com.elemental.client.renderer.SolarArcRenderer;
 import com.elemental.client.renderer.SunforgedScimitarRenderer;
 import com.elemental.entity.ModEntities;
+import com.elemental.item.FrostwakePickItem;
 import com.elemental.item.SunforgedScimitarItem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -21,6 +23,21 @@ public class ElementalClient implements ClientModInitializer {
 				public BuiltinModelItemRenderer getCustomRenderer() {
 					if (this.renderer == null) {
 						this.renderer = new SunforgedScimitarRenderer();
+					}
+					return this.renderer;
+				}
+			});
+		};
+
+		// Register GeckoLib custom renderer for the Frostwake Pick item
+		FrostwakePickItem.RENDER_PROVIDER_CONSUMER = (consumer) -> {
+			consumer.accept(new RenderProvider() {
+				private FrostwakePickRenderer renderer;
+
+				@Override
+				public BuiltinModelItemRenderer getCustomRenderer() {
+					if (this.renderer == null) {
+						this.renderer = new FrostwakePickRenderer();
 					}
 					return this.renderer;
 				}

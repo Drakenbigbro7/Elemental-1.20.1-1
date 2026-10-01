@@ -37,9 +37,19 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalBiomeTags;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class FrostwakePickItem extends PickaxeItem {
+public class FrostwakePickItem extends PickaxeItem implements GeoItem {
 
     public static final int DURABILITY = 2000;
 
@@ -60,19 +70,60 @@ public class FrostwakePickItem extends PickaxeItem {
     public static final int MAX_PASSIVE_LEVEL = 2;
 
     public static final int ACTIVE_SLOW_DURATION = 100;
-    public static final int ACTIVE_SLOW_LEVEL = 2;
+    public static final int ACTIVE_SLOW_LEVEL = 5;
     public static final int ACTIVE_SLOW_LEVEL_UPGRADED = 3;
 
     private static final String GLACIAL_CORE_KEY = "GlacialCoreInstalled";
     private static final String LAST_CHILL_TIME_KEY = "LastChillTime";
     private static final String CHILL_STACKS_KEY = "ChillStacks";
 
+    // GeckoLib animation definitions
+    private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.frostwake_pick.idle");
+    private static final RawAnimation SWING_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.swing");
+    private static final RawAnimation COOLDOWN_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.cooldown");
+    private static final RawAnimation FROSTBURST_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.frostburst");
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
+
+    // Client renderer hook
+    public static Consumer<Consumer<Object>> RENDER_PROVIDER_CONSUMER;
+
     public FrostwakePickItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
         super(toolMaterial, attackDamage, attackSpeed, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
     public FrostwakePickItem(Settings settings) {
         super(FrostwakePickToolMaterial.INSTANCE, BASE_ATTACK_DAMAGE, BASE_ATTACK_SPEED, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
+    }
+
+    @Override
+    public void createRenderer(Consumer<Object> consumer) {
+        if (RENDER_PROVIDER_CONSUMER != null) {
+            RENDER_PROVIDER_CONSUMER.accept(consumer);
+        }
+    }
+
+    @Override
+    public Supplier<Object> getRenderProvider() {
+        return this.renderProvider;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 4, state -> {
+            return state.setAndContinue(IDLE_ANIM);
+        }).triggerableAnim("swing", SWING_ANIM)
+          .triggerableAnim("cooldown", COOLDOWN_ANIM)
+          .triggerableAnim("frostburst", FROSTBURST_ANIM)
+          .triggerableAnim("idle", IDLE_ANIM));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override

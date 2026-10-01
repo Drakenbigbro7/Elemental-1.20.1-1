@@ -8,251 +8,2029 @@
         "texture_height": 64,
         "visible_bounds_width": 3,
         "visible_bounds_height": 4,
-        "visible_bounds_offset": [0, 1.5, 0]
+        "visible_bounds_offset": [
+          0,
+          1.5,
+          0
+        ]
       },
       "bones": [
         {
-          "name": "frostwake_pick",
-          "pivot": [0, 0, 0]
-        },
-        {
-          "name": "handle",
-          "parent": "frostwake_pick",
-          "pivot": [0, 0, 0],
+          "name": "pickaxe",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
           "cubes": [
             {
-              "comment": "Main handle shaft",
-              "origin": [-0.75, -4.0, -0.75],
-              "size": [1.5, 8.5, 1.5],
+              "origin": [
+                -2,
+                -1,
+                -2
+              ],
+              "size": [
+                4,
+                4,
+                4
+              ],
               "uv": {
-                "north": {"uv": [0, 0], "uv_size": [6, 34]},
-                "east":  {"uv": [0, 0], "uv_size": [6, 34]},
-                "south": {"uv": [0, 0], "uv_size": [6, 34]},
-                "west":  {"uv": [0, 0], "uv_size": [6, 34]},
-                "up":    {"uv": [0, 0], "uv_size": [6, 6]},
-                "down":  {"uv": [0, 34], "uv_size": [6, 6]}
+                "north": {
+                  "uv": [
+                    0,
+                    36
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    40
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    4,
+                    36
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    4,
+                    40
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    44
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    4,
+                    44
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                }
               }
             },
             {
-              "comment": "Handle butt cap / pommel",
-              "origin": [-1.0, -5.0, -1.0],
-              "size": [2.0, 1.0, 2.0],
+              "origin": [
+                -1,
+                3,
+                -1
+              ],
+              "size": [
+                2,
+                34.5,
+                2
+              ],
+              "pivot": [
+                0,
+                3,
+                0
+              ],
               "uv": {
-                "north": {"uv": [0, 40], "uv_size": [8, 4]},
-                "east":  {"uv": [0, 40], "uv_size": [8, 4]},
-                "south": {"uv": [0, 40], "uv_size": [8, 4]},
-                "west":  {"uv": [0, 40], "uv_size": [8, 4]},
-                "up":    {"uv": [0, 44], "uv_size": [8, 4]},
-                "down":  {"uv": [0, 48], "uv_size": [8, 4]}
+                "north": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    34
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    2,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    34
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    4,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    34
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    6,
+                    0
+                  ],
+                  "uv_size": [
+                    2,
+                    34
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    34
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    2,
+                    34
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             },
             {
-              "comment": "Handle collar / guard junction",
-              "origin": [-1.1, 4.0, -1.1],
-              "size": [2.2, 0.8, 2.2],
+              "origin": [
+                -3,
+                31,
+                -6
+              ],
+              "size": [
+                6,
+                6,
+                12
+              ],
+              "inflate": -1.1,
+              "pivot": [
+                0,
+                33,
+                0
+              ],
               "uv": {
-                "north": {"uv": [0, 40], "uv_size": [9, 4]},
-                "east":  {"uv": [0, 40], "uv_size": [9, 4]},
-                "south": {"uv": [0, 40], "uv_size": [9, 4]},
-                "west":  {"uv": [0, 40], "uv_size": [9, 4]},
-                "up":    {"uv": [0, 44], "uv_size": [9, 4]},
-                "down":  {"uv": [0, 48], "uv_size": [9, 4]}
+                "north": {
+                  "uv": [
+                    16,
+                    0
+                  ],
+                  "uv_size": [
+                    6,
+                    6
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    0
+                  ],
+                  "uv_size": [
+                    12,
+                    6
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    22,
+                    0
+                  ],
+                  "uv_size": [
+                    6,
+                    6
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    28,
+                    0
+                  ],
+                  "uv_size": [
+                    12,
+                    6
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    16,
+                    0
+                  ],
+                  "uv_size": [
+                    24,
+                    6
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    16,
+                    2
+                  ],
+                  "uv_size": [
+                    24,
+                    6
+                  ]
+                }
               }
             },
             {
-              "comment": "Small ice shard on handle (left side, mid)",
-              "origin": [-1.8, 1.0, -0.3],
-              "size": [0.8, 1.2, 0.6],
-              "pivot": [-1.4, 1.6, 0],
-              "rotation": [0, 0, -25],
+              "origin": [
+                -2.5,
+                31.5,
+                -11
+              ],
+              "size": [
+                5.0,
+                5.0,
+                8
+              ],
+              "inflate": -1.1,
+              "rotation": [
+                -12.5,
+                0,
+                0
+              ],
+              "pivot": [
+                0,
+                33,
+                -5
+              ],
               "uv": {
-                "north": {"uv": [16, 32], "uv_size": [4, 6]},
-                "east":  {"uv": [16, 32], "uv_size": [4, 6]},
-                "south": {"uv": [16, 32], "uv_size": [4, 6]},
-                "west":  {"uv": [16, 32], "uv_size": [4, 6]},
-                "up":    {"uv": [16, 32], "uv_size": [4, 4]},
-                "down":  {"uv": [16, 32], "uv_size": [4, 4]}
+                "north": {
+                  "uv": [
+                    16,
+                    8
+                  ],
+                  "uv_size": [
+                    5,
+                    5
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    13
+                  ],
+                  "uv_size": [
+                    8,
+                    5
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    21,
+                    8
+                  ],
+                  "uv_size": [
+                    5,
+                    5
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    16,
+                    13
+                  ],
+                  "uv_size": [
+                    8,
+                    5
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    16,
+                    18
+                  ],
+                  "uv_size": [
+                    5,
+                    4
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    21,
+                    18
+                  ],
+                  "uv_size": [
+                    5,
+                    4
+                  ]
+                }
               }
             },
             {
-              "comment": "Small ice shard on handle (right side, lower)",
-              "origin": [1.0, -1.5, -0.3],
-              "size": [0.8, 1.0, 0.6],
-              "pivot": [1.4, -1.0, 0],
-              "rotation": [0, 0, 20],
+              "origin": [
+                -2.5,
+                31.5,
+                3
+              ],
+              "size": [
+                5.0,
+                5.0,
+                8
+              ],
+              "inflate": -1.1,
+              "rotation": [
+                12.5,
+                0,
+                0
+              ],
+              "pivot": [
+                -1,
+                32,
+                5
+              ],
               "uv": {
-                "north": {"uv": [20, 32], "uv_size": [4, 5]},
-                "east":  {"uv": [20, 32], "uv_size": [4, 5]},
-                "south": {"uv": [20, 32], "uv_size": [4, 5]},
-                "west":  {"uv": [20, 32], "uv_size": [4, 5]},
-                "up":    {"uv": [20, 32], "uv_size": [4, 4]},
-                "down":  {"uv": [20, 32], "uv_size": [4, 4]}
+                "north": {
+                  "uv": [
+                    38,
+                    8
+                  ],
+                  "uv_size": [
+                    5,
+                    5
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    38,
+                    13
+                  ],
+                  "uv_size": [
+                    8,
+                    5
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    43,
+                    8
+                  ],
+                  "uv_size": [
+                    5,
+                    5
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    38,
+                    13
+                  ],
+                  "uv_size": [
+                    8,
+                    5
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    38,
+                    18
+                  ],
+                  "uv_size": [
+                    5,
+                    4
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    43,
+                    18
+                  ],
+                  "uv_size": [
+                    5,
+                    4
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.8,
+                30.8,
+                8.6
+              ],
+              "size": [
+                3.6,
+                3.5,
+                7.0
+              ],
+              "inflate": -1.1,
+              "rotation": [
+                20,
+                0,
+                0
+              ],
+              "pivot": [
+                0,
+                32.2,
+                11.6
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    38,
+                    22
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    38,
+                    26
+                  ],
+                  "uv_size": [
+                    7,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    42,
+                    22
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    38,
+                    26
+                  ],
+                  "uv_size": [
+                    7,
+                    4
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    38,
+                    30
+                  ],
+                  "uv_size": [
+                    4,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    42,
+                    30
+                  ],
+                  "uv_size": [
+                    4,
+                    2
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.8,
+                30.8,
+                -15.4
+              ],
+              "size": [
+                3.6,
+                3.5,
+                7.0
+              ],
+              "inflate": -1.1,
+              "rotation": [
+                -20,
+                0,
+                0
+              ],
+              "pivot": [
+                0,
+                32.2,
+                -10.4
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    16,
+                    22
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    26
+                  ],
+                  "uv_size": [
+                    7,
+                    4
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    20,
+                    22
+                  ],
+                  "uv_size": [
+                    4,
+                    4
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    16,
+                    26
+                  ],
+                  "uv_size": [
+                    7,
+                    4
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    16,
+                    30
+                  ],
+                  "uv_size": [
+                    4,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    30
+                  ],
+                  "uv_size": [
+                    4,
+                    2
+                  ]
+                }
+              }
+            },
+            {
+              "origin": [
+                -1.3,
+                36,
+                -1.3
+              ],
+              "size": [
+                2.6,
+                1,
+                2.6
+              ],
+              "pivot": [
+                0,
+                -1,
+                0
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    8,
+                    36
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    11,
+                    36
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    8,
+                    38
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    11,
+                    38
+                  ],
+                  "uv_size": [
+                    3,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    8,
+                    40
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    11,
+                    40
+                  ],
+                  "uv_size": [
+                    3,
+                    3
+                  ]
+                }
               }
             }
           ]
         },
         {
-          "name": "head_base",
-          "parent": "frostwake_pick",
-          "pivot": [0, 5.0, 0],
+          "name": "bone",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "1",
+          "pivot": [
+            -4,
+            4,
+            1
+          ],
+          "parent": "bone",
           "cubes": [
             {
-              "comment": "Main crossbar of pickaxe head",
-              "origin": [-4.0, 4.8, -1.2],
-              "size": [8.0, 1.8, 2.4],
+              "origin": [
+                -5,
+                4,
+                0
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -4,
+                4,
+                1
+              ],
               "uv": {
-                "north": {"uv": [16, 0], "uv_size": [32, 8]},
-                "east":  {"uv": [16, 0], "uv_size": [10, 8]},
-                "south": {"uv": [16, 0], "uv_size": [32, 8]},
-                "west":  {"uv": [16, 0], "uv_size": [10, 8]},
-                "up":    {"uv": [16, 0], "uv_size": [32, 10]},
-                "down":  {"uv": [16, 10], "uv_size": [32, 10]}
+                "north": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    16,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             }
           ]
         },
         {
-          "name": "left_tine",
-          "parent": "head_base",
-          "pivot": [-3.0, 5.7, 0],
+          "name": "2",
+          "pivot": [
+            -4,
+            6,
+            3
+          ],
+          "parent": "bone",
           "cubes": [
             {
-              "comment": "Left tine main body",
-              "origin": [-4.5, 5.5, -1.0],
-              "size": [2.5, 4.0, 2.0],
-              "pivot": [-3.2, 5.7, 0],
-              "rotation": [0, 0, -8],
+              "origin": [
+                -5,
+                6,
+                2
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -4,
+                6,
+                3
+              ],
               "uv": {
-                "north": {"uv": [16, 8], "uv_size": [10, 14]},
-                "east":  {"uv": [16, 8], "uv_size": [8, 14]},
-                "south": {"uv": [16, 8], "uv_size": [10, 14]},
-                "west":  {"uv": [16, 8], "uv_size": [8, 14]},
-                "up":    {"uv": [16, 8], "uv_size": [10, 8]},
-                "down":  {"uv": [16, 8], "uv_size": [10, 8]}
-              }
-            },
-            {
-              "comment": "Left tine tip (sharpened ice point)",
-              "origin": [-5.2, 9.3, -0.7],
-              "size": [1.8, 2.5, 1.4],
-              "pivot": [-4.3, 9.5, 0],
-              "rotation": [0, 0, -15],
-              "uv": {
-                "north": {"uv": [16, 18], "uv_size": [8, 10]},
-                "east":  {"uv": [16, 18], "uv_size": [6, 10]},
-                "south": {"uv": [16, 18], "uv_size": [8, 10]},
-                "west":  {"uv": [16, 18], "uv_size": [6, 10]},
-                "up":    {"uv": [16, 18], "uv_size": [8, 6]},
-                "down":  {"uv": [16, 24], "uv_size": [8, 6]}
+                "north": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    8,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             }
           ]
         },
         {
-          "name": "right_tine",
-          "parent": "head_base",
-          "pivot": [3.0, 5.7, 0],
+          "name": "3",
+          "pivot": [
+            -3,
+            8,
+            5
+          ],
+          "parent": "bone",
           "cubes": [
             {
-              "comment": "Right tine main body",
-              "origin": [2.0, 5.5, -1.0],
-              "size": [2.5, 4.0, 2.0],
-              "pivot": [3.2, 5.7, 0],
-              "rotation": [0, 0, 8],
+              "origin": [
+                -4,
+                8,
+                4
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -3,
+                8,
+                5
+              ],
               "uv": {
-                "north": {"uv": [38, 8], "uv_size": [10, 14]},
-                "east":  {"uv": [38, 8], "uv_size": [8, 14]},
-                "south": {"uv": [38, 8], "uv_size": [10, 14]},
-                "west":  {"uv": [38, 8], "uv_size": [8, 14]},
-                "up":    {"uv": [38, 8], "uv_size": [10, 8]},
-                "down":  {"uv": [38, 8], "uv_size": [10, 8]}
-              }
-            },
-            {
-              "comment": "Right tine tip (sharpened ice point)",
-              "origin": [3.4, 9.3, -0.7],
-              "size": [1.8, 2.5, 1.4],
-              "pivot": [4.3, 9.5, 0],
-              "rotation": [0, 0, 15],
-              "uv": {
-                "north": {"uv": [38, 18], "uv_size": [8, 10]},
-                "east":  {"uv": [38, 18], "uv_size": [6, 10]},
-                "south": {"uv": [38, 18], "uv_size": [8, 10]},
-                "west":  {"uv": [38, 18], "uv_size": [6, 10]},
-                "up":    {"uv": [38, 18], "uv_size": [8, 6]},
-                "down":  {"uv": [38, 24], "uv_size": [8, 6]}
+                "north": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             }
           ]
         },
         {
-          "name": "ice_crystals",
-          "parent": "head_base",
-          "pivot": [0, 7.5, 0],
+          "name": "4",
+          "pivot": [
+            -1,
+            10,
+            6
+          ],
+          "parent": "bone",
           "cubes": [
             {
-              "comment": "Central ice spike (forward)",
-              "origin": [-0.6, 6.6, -3.2],
-              "size": [1.2, 2.2, 2.2],
-              "pivot": [0, 7.0, -2.0],
-              "rotation": [-20, 0, 0],
+              "origin": [
+                -2,
+                10,
+                5
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -1,
+                10,
+                6
+              ],
               "uv": {
-                "north": {"uv": [32, 32], "uv_size": [6, 10]},
-                "east":  {"uv": [32, 32], "uv_size": [8, 10]},
-                "south": {"uv": [32, 32], "uv_size": [6, 10]},
-                "west":  {"uv": [32, 32], "uv_size": [8, 10]},
-                "up":    {"uv": [32, 32], "uv_size": [6, 8]},
-                "down":  {"uv": [32, 40], "uv_size": [6, 8]}
-              }
-            },
-            {
-              "comment": "Left crystal shard",
-              "origin": [-3.5, 6.2, -0.5],
-              "size": [1.2, 2.0, 1.0],
-              "pivot": [-2.8, 6.5, 0],
-              "rotation": [0, 0, -30],
-              "uv": {
-                "north": {"uv": [38, 32], "uv_size": [6, 8]},
-                "east":  {"uv": [38, 32], "uv_size": [4, 8]},
-                "south": {"uv": [38, 32], "uv_size": [6, 8]},
-                "west":  {"uv": [38, 32], "uv_size": [4, 8]},
-                "up":    {"uv": [38, 32], "uv_size": [6, 4]},
-                "down":  {"uv": [38, 36], "uv_size": [6, 4]}
-              }
-            },
-            {
-              "comment": "Right crystal shard",
-              "origin": [2.3, 6.2, -0.5],
-              "size": [1.2, 2.0, 1.0],
-              "pivot": [2.8, 6.5, 0],
-              "rotation": [0, 0, 30],
-              "uv": {
-                "north": {"uv": [44, 32], "uv_size": [6, 8]},
-                "east":  {"uv": [44, 32], "uv_size": [4, 8]},
-                "south": {"uv": [44, 32], "uv_size": [6, 8]},
-                "west":  {"uv": [44, 32], "uv_size": [4, 8]},
-                "up":    {"uv": [44, 32], "uv_size": [6, 4]},
-                "down":  {"uv": [44, 36], "uv_size": [6, 4]}
+                "north": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    12,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             }
           ]
         },
         {
-          "name": "glacial_core",
-          "parent": "head_base",
-          "pivot": [0, 5.7, 0],
+          "name": "5",
+          "pivot": [
+            1,
+            12,
+            6
+          ],
+          "parent": "bone",
           "cubes": [
             {
-              "comment": "Glowing glacial core gem embedded in head",
-              "origin": [-1.2, 4.9, -1.5],
-              "size": [2.4, 2.0, 3.0],
+              "origin": [
+                0,
+                12,
+                5
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                1,
+                12,
+                6
+              ],
               "uv": {
-                "north": {"uv": [48, 32], "uv_size": [10, 8]},
-                "east":  {"uv": [48, 32], "uv_size": [12, 8]},
-                "south": {"uv": [48, 32], "uv_size": [10, 8]},
-                "west":  {"uv": [48, 32], "uv_size": [12, 8]},
-                "up":    {"uv": [48, 40], "uv_size": [10, 12]},
-                "down":  {"uv": [48, 52], "uv_size": [10, 12]}
+                "north": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6",
+          "pivot": [
+            3,
+            14,
+            5
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                2,
+                14,
+                4
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                3,
+                14,
+                5
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    4,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "7",
+          "pivot": [
+            4,
+            16,
+            3
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                3,
+                16,
+                2
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                4,
+                16,
+                3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    8,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "8",
+          "pivot": [
+            4,
+            18,
+            1
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                3,
+                18,
+                0
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                4,
+                18,
+                1
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    12,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "9",
+          "pivot": [
+            4,
+            20,
+            -1
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                3,
+                20,
+                -2
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                4,
+                20,
+                -1
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    16,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "10",
+          "pivot": [
+            3,
+            22,
+            -3
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                2,
+                22,
+                -4
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                3,
+                22,
+                -3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    20,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "11",
+          "pivot": [
+            1,
+            24,
+            -3
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                0,
+                24,
+                -4
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                1,
+                24,
+                -3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    24,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "12",
+          "pivot": [
+            -1.5,
+            26.5,
+            -3.5
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                -2,
+                26,
+                -4
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -1,
+                26,
+                -3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    4,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "13",
+          "pivot": [
+            -2,
+            28,
+            -1
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                -3,
+                28,
+                -2
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -2,
+                28,
+                -1
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    28,
+                    48
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "14",
+          "pivot": [
+            -3,
+            30,
+            1
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                -4.4,
+                30,
+                0
+              ],
+              "size": [
+                1.0,
+                1,
+                1
+              ],
+              "pivot": [
+                -3.4,
+                30,
+                1
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "15",
+          "pivot": [
+            -5.5,
+            32.5,
+            2.5
+          ],
+          "parent": "bone",
+          "cubes": [
+            {
+              "origin": [
+                -6,
+                32,
+                2
+              ],
+              "size": [
+                1,
+                1,
+                1
+              ],
+              "pivot": [
+                -5,
+                32,
+                3
+              ],
+              "uv": {
+                "north": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "east": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "south": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "west": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "up": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    24,
+                    56
+                  ],
+                  "uv_size": [
+                    2,
+                    2
+                  ]
+                }
               }
             }
           ]
