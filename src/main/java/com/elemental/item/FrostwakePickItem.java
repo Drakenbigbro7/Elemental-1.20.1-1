@@ -81,7 +81,9 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.frostwake_pick.idle");
     private static final RawAnimation SWING_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.swing");
     private static final RawAnimation COOLDOWN_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.cooldown");
-    private static final RawAnimation FROSTBURST_ANIM = RawAnimation.begin().thenPlay("animation.frostwake_pick.frostburst");
+    private static final RawAnimation FROSTBURST_ANIM = RawAnimation.begin()
+            .thenPlay("animation.frostwake_pick.frostburst")
+            .thenPlay("animation.frostwake_pick.cooldown");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
@@ -154,6 +156,16 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
         if (!world.isClient() && !isBoss(target)) {
             applyPassiveChill(stack, target, world.getTime());
         }
+
+        if (world.isClient()) {
+            long id = GeoItem.getId(stack);
+            if (id != Long.MAX_VALUE) {
+                triggerAnim(attacker, id, "controller", "swing");
+            }
+        } else if (world instanceof ServerWorld serverWorld) {
+            long id = GeoItem.getOrAssignId(stack, serverWorld);
+            triggerAnim(attacker, id, "controller", "swing");
+        }
         return true;
     }
 
@@ -179,12 +191,25 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
 
-        if (world.isClient()) {
-            return TypedActionResult.consume(stack);
+        if (user.getItemCooldownManager().isCoolingDown(this)) {
+            if (world.isClient()) {
+                long id = GeoItem.getId(stack);
+                if (id != Long.MAX_VALUE) {
+                    triggerAnim(user, id, "controller", "cooldown");
+                }
+            } else if (world instanceof ServerWorld serverWorld) {
+                long id = GeoItem.getOrAssignId(stack, serverWorld);
+                triggerAnim(user, id, "controller", "cooldown");
+            }
+            return TypedActionResult.fail(stack);
         }
 
-        if (user.getItemCooldownManager().isCoolingDown(this)) {
-            return TypedActionResult.fail(stack);
+        if (world.isClient()) {
+            long id = GeoItem.getId(stack);
+            if (id != Long.MAX_VALUE) {
+                triggerAnim(user, id, "controller", "frostburst");
+            }
+            return TypedActionResult.consume(stack);
         }
 
         performFrostburst((ServerWorld) world, user, stack);
@@ -192,6 +217,9 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
     }
 
     private void performFrostburst(ServerWorld world, PlayerEntity user, ItemStack stack) {
+        long id = GeoItem.getOrAssignId(stack, world);
+        triggerAnim(user, id, "controller", "frostburst");
+
         double radius = hasGlacialCore(stack) ? UPGRADED_RADIUS : BASE_RADIUS;
         Vec3d center = user.getPos();
 
