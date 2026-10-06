@@ -55,11 +55,11 @@ import java.util.UUID;
 public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     // ==================== BASE ATTRIBUTES & CONSTANTS ====================
-    public static final float MAX_HEALTH = 800.0f;
+    public static final float MAX_HEALTH = 250.0f; // Lowered HP so normal weapons feel impactful
     public static final float BASE_ATTACK_DAMAGE = 14.0f;
     public static final float ENRAGED_ATTACK_DAMAGE = 21.0f;
-    public static final int BASE_ARMOR = 16;
-    public static final float BASE_ARMOR_TOUGHNESS = 6.0f;
+    public static final int BASE_ARMOR = 8; // Lowered armor from 16 to 8
+    public static final float BASE_ARMOR_TOUGHNESS = 2.0f; // Lowered toughness from 6.0 to 2.0
     public static final double BASE_KNOCKBACK_RESISTANCE = 0.9;
     public static final double BASE_MOVEMENT_SPEED = 0.25;
     public static final double FOLLOW_RANGE = 48.0;
@@ -68,15 +68,14 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public static final double CHASE_SPEED_NORMAL = 1.15;
     public static final double CHASE_SPEED_PHASE3 = 1.35;
 
-    // Regeneration
-    public static final float BASE_REGEN_PER_SECOND = 16.0f; // 2% max HP per second
-    public static final float BASE_REGEN_PER_TICK = BASE_REGEN_PER_SECOND / 20.0f; // 0.8 HP/tick
-    public static final float THORN_CAGE_REGEN_MULTIPLIER = 0.40f; // 6.4 HP/s
+    // Regeneration (scaled to 250 HP: 2% = 5 HP/s = 0.25 HP/tick)
+    public static final float BASE_REGEN_PER_SECOND = 5.0f;
+    public static final float BASE_REGEN_PER_TICK = BASE_REGEN_PER_SECOND / 20.0f; // 0.25 HP/tick
+    public static final float THORN_CAGE_REGEN_MULTIPLIER = 0.40f; // 2.0 HP/s
     public static final int FROSTBURST_LOCK_TICKS = 300; // 15 seconds
     public static final int THORN_CAGE_DURATION_TICKS = 100; // 5 seconds
     public static final int MAX_CORE_INTEGRITY = 100;
-    public static final int CORE_DAMAGE_PER_THORN_CAGE = 20;
-    public static final int CORE_DAMAGE_DURING_FLEX = 30; // Bonus core damage when punishing during roar/flex
+    public static final int CORE_DAMAGE_PER_THORN_CAGE = 34; // 3 hits break the 3 cores (100 -> 66 -> 32 -> 0)
 
     // Stagger & Enrage
     public static final int STAGGER_DURATION = 100; // 5 seconds vulnerability
@@ -467,22 +466,17 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void applyThornCageReaction() {
         if (this.getWorld().isClient()) return;
 
-        int damage = isRoaringFlexing() ? CORE_DAMAGE_DURING_FLEX : CORE_DAMAGE_PER_THORN_CAGE;
-        int newIntegrity = Math.max(0, getCoreIntegrity() - damage);
+        int newIntegrity = Math.max(0, getCoreIntegrity() - CORE_DAMAGE_PER_THORN_CAGE);
         setCoreIntegrity(newIntegrity);
 
         this.thornCagedTicks = THORN_CAGE_DURATION_TICKS;
         triggerAnimation("thorn_cage_reaction");
 
         if (this.getWorld() instanceof ServerWorld world) {
-            if (isRoaringFlexing()) {
-                world.playSound(null, this.getX(), this.getY(), this.getZ(),
-                        SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.HOSTILE, 1.0f, 1.4f);
-                world.playSound(null, this.getX(), this.getY(), this.getZ(),
-                        SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.6f, 1.2f);
-                world.spawnParticles(ParticleTypes.CRIT, this.getX(), this.getY() + 1.5, this.getZ(),
-                        25, 0.4, 0.4, 0.4, 0.15);
-            }
+            world.playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.HOSTILE, 1.0f, 1.4f);
+            world.spawnParticles(ParticleTypes.CRIT, this.getX(), this.getY() + 1.5, this.getZ(),
+                    25, 0.4, 0.4, 0.4, 0.15);
         }
 
         if (newIntegrity <= 0 && !isCoreBroken()) {
@@ -508,7 +502,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void applySolarArcReaction(PlayerEntity player) {
         if (this.getWorld().isClient()) return;
 
-        float magicDmg = MAX_HEALTH * 0.05f; // 40.0 magic damage
+        float magicDmg = 18.0f; // Magic damage
         this.damage(this.getDamageSources().magic(), magicDmg);
         triggerAnimation("solar_arc_reaction");
     }
@@ -939,14 +933,46 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     private void updateBossBar() {
         this.bossBar.setPercent(MathHelper.clamp(this.getHealth() / this.getMaxHealth(), 0.0f, 1.0f));
 
-        if (isRoaringFlexing()) {
-            this.bossBar.setName(Text.literal("Sir Solvane - [CORE EXPOSED: ROARING]"));
-        } else if (isCoreBroken()) {
-            this.bossBar.setName(Text.literal("Sir Solvane - [CORE SHATTERED]"));
-        } else if (isStaggered()) {
-            this.bossBar.setName(Text.literal("Sir Solvane - [STAGGERED]"));
+        if (isCoreBroken() || getCoreIntegrity() <= 0) {
+            // All 3 cores destroyed: cycle through all 3 colors (Red, Orange/Yellow, Green) together!
+            long time = this.getWorld().getTime();
+            int cycle = (int) ((time / 8) % 3);
+            if (cycle == 0) {
+                this.bossBar.setColor(BossBar.Color.RED);
+            } else if (cycle == 1) {
+                this.bossBar.setColor(BossBar.Color.YELLOW);
+            } else {
+                this.bossBar.setColor(BossBar.Color.GREEN);
+            }
+
+            if (isStaggered()) {
+                this.bossBar.setName(Text.literal("Sir Solvane - §c[Core 1] §6[Core 2] §a[Core 3] §f[ALL SHATTERED - STAGGERED]"));
+            } else {
+                this.bossBar.setName(Text.literal("Sir Solvane - §c[Core 1] §6[Core 2] §a[Core 3] §f[ALL SHATTERED]"));
+            }
+        } else if (this.frostFrozenTicks > 0) {
+            // Blue for frozen regen
+            this.bossBar.setColor(BossBar.Color.BLUE);
+            String roarStatus = isRoaringFlexing() ? " §e[ROARING]§r" : "";
+            this.bossBar.setName(Text.literal("Sir Solvane - §9[FROZEN REGEN (" + (this.frostFrozenTicks / 20) + "s)]§r" + roarStatus));
         } else {
-            this.bossBar.setName(Text.literal("Sir Solvane, the Everliving Knight"));
+            // Active Core Color Indicators:
+            // Red: First core (100 - 67 integrity)
+            // Orange (Yellow in Minecraft): 2nd core (66 - 34 integrity)
+            // Green: 3rd core (33 - 1 integrity)
+            int integrity = getCoreIntegrity();
+            String roarStatus = isRoaringFlexing() ? " §e[ROARING]§r" : "";
+
+            if (integrity > 66) {
+                this.bossBar.setColor(BossBar.Color.RED);
+                this.bossBar.setName(Text.literal("Sir Solvane - §c[Core 1/3 Active]§r" + roarStatus));
+            } else if (integrity > 33) {
+                this.bossBar.setColor(BossBar.Color.YELLOW); // Minecraft Yellow renders as Orange/Gold
+                this.bossBar.setName(Text.literal("Sir Solvane - §6[Core 2/3 Active]§r" + roarStatus));
+            } else {
+                this.bossBar.setColor(BossBar.Color.GREEN);
+                this.bossBar.setName(Text.literal("Sir Solvane - §a[Core 3/3 Active]§r" + roarStatus));
+            }
         }
     }
 
