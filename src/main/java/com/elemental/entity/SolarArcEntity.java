@@ -130,8 +130,12 @@ public class SolarArcEntity extends PersistentProjectileEntity implements GeoEnt
                 float dmg = wetConditions ? (this.damage * RAIN_DAMAGE_MULTIPLIER) : this.damage;
                 int fireSecs = wetConditions ? RAIN_FIRE_SECONDS : (BASE_FIRE_SECONDS + this.solarCoreLevel * CORE_FIRE_BONUS_SECONDS);
 
-                entity.damage(this.getDamageSources().magic(), dmg);
-                entity.setOnFireFor(fireSecs);
+                if (entity instanceof EverlivingKnightEntity knight && this.getOwner() instanceof PlayerEntity player) {
+                    knight.applySolarArcReaction(player);
+                } else {
+                    entity.damage(this.getDamageSources().magic(), dmg);
+                    entity.setOnFireFor(fireSecs);
+                }
             }
 
             // Spawn solar burst particles and sound on impact

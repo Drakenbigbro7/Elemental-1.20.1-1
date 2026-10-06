@@ -1,13 +1,13 @@
 package com.elemental.entity;
 
 import com.elemental.Elemental;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-
 
 public class ModEntities {
     public static final EntityType<SolarArcEntity> SOLAR_ARC = Registry.register(
@@ -20,7 +20,18 @@ public class ModEntities {
                     .build()
     );
 
+    public static final EntityType<EverlivingKnightEntity> EVERLIVING_KNIGHT = Registry.register(
+            Registries.ENTITY_TYPE,
+            Elemental.id("everliving_knight"),
+            FabricEntityTypeBuilder.<EverlivingKnightEntity>create(SpawnGroup.MONSTER, EverlivingKnightEntity::new)
+                    .dimensions(EntityDimensions.fixed(1.2f, 2.6f))
+                    .trackRangeBlocks(64)
+                    .trackedUpdateRate(3)
+                    .build()
+    );
+
     public static void registerModEntities() {
         Elemental.LOGGER.info("Registering mod entities for " + Elemental.MOD_ID);
+        FabricDefaultAttributeRegistry.register(EVERLIVING_KNIGHT, EverlivingKnightEntity.createKnightAttributes());
     }
 }

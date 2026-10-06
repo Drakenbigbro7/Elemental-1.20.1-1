@@ -229,8 +229,12 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
 
         for (Entity entity : world.getOtherEntities(user, area)) {
             if (entity instanceof LivingEntity living) {
-                int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
-                living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
+                if (living instanceof com.elemental.entity.EverlivingKnightEntity knight) {
+                    knight.applyFrostburstReaction();
+                } else {
+                    int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
+                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
+                }
             }
         }
 

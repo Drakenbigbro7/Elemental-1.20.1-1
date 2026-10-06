@@ -1,5 +1,6 @@
 package com.elemental.client;
 
+import com.elemental.client.renderer.EverlivingKnightRenderer;
 import com.elemental.client.renderer.FrostwakePickRenderer;
 import com.elemental.client.renderer.RootboundAxeRenderer;
 import com.elemental.client.renderer.SolarArcRenderer;
@@ -64,5 +65,7 @@ public class ElementalClient implements ClientModInitializer {
 		// Register GeckoLib animated renderer for the Solar Arc projectile
 		EntityRendererRegistry.register(ModEntities.SOLAR_ARC, SolarArcRenderer::new);
 
+		// Register GeckoLib animated renderer for Sir Solvane, the Everliving Knight
+		EntityRendererRegistry.register(ModEntities.EVERLIVING_KNIGHT, EverlivingKnightRenderer::new);
 	}
 }

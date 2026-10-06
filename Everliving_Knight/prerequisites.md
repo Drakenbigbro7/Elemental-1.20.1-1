@@ -1,201 +1,150 @@
-You are a senior Minecraft Java mod developer specializing in Fabric 1.20.1, Yarn mappings, Fabric API, GeckoLib 4.x, entity AI, boss systems, and multiplayer-safe server-side gameplay.
+You are a professional Minecraft Java/Fabric mod developer.
 
-I am working on an existing Minecraft Fabric mod project.
+I am developing a Minecraft 1.20.1 Fabric mod and need you to create the prerequisites and foundational architecture for a custom boss entity.
 
-PROJECT TARGET:
+## EXACT PROJECT VERSIONS
 
-* Minecraft version: 1.20.1
+* Minecraft: 1.20.1
 * Yarn mappings: 1.20.1+build.10
 * Fabric Loader: 0.19.5
 * Fabric Loom: 1.18-SNAPSHOT
 * Fabric API: 0.92.12+1.20.1
-* Java: use the Java version required by Minecraft 1.20.1, normally Java 17
 * Mod ID: elemental
-* Boss name: Sir Solvane, the Everliving Knight
+* Java: use the Java version actually required/compatible with Minecraft 1.20.1 and this project configuration. Do NOT blindly change the project's Java version to Java 25 if the existing 1.20.1 Fabric toolchain requires another version.
+* GeckoLib: use a GeckoLib 4 version compatible with Minecraft 1.20.1 and the existing project.
 
-IMPORTANT:
-This is an EXISTING project. Do not replace the project's architecture, package structure, Gradle configuration, entrypoints, or registration system unnecessarily.
+## BOSS
 
-FIRST inspect the existing project and determine:
+Name:
+Sir Solvane, the Everliving Knight
 
-1. The current base Java package.
-2. The existing main Fabric mod initializer.
-3. Existing item registration classes.
-4. Existing entity registration classes, if any.
-5. Existing client initializer.
-6. Existing GeckoLib setup, if any.
-7. Existing weapon implementations:
+Entity ID:
+elemental:everliving_knight
 
-   * elemental:sunforged_scimitar
-   * elemental:frostwake_pick
-   * elemental:rootbound_axe
-8. Existing resource folder conventions.
-9. Existing mixins and whether any are already required.
-10. Existing naming conventions.
+The complete boss mechanics specification is provided in the attached guide:
+"EVERLIVING_KNIGHT_GUIDE(1).md"
 
-Your task in this prompt is ONLY to prepare the prerequisites and architecture for the boss.
+Treat that guide as the authoritative specification for the boss mechanics. Do not invent replacement mechanics or silently remove mechanics.
 
-DO NOT implement the complete boss AI yet.
-DO NOT create the full boss entity yet.
-DO NOT create the model yet.
-DO NOT create animations yet.
-DO NOT create the final texture yet.
-DO NOT create crafting recipes.
+## TASK
 
-GECKOLIB:
-Add GeckoLib 4.x compatible with Fabric 1.20.1 using the appropriate Maven repository and dependency.
-Prefer the currently established 1.20.1 GeckoLib 4.x dependency version compatible with this project; do not blindly use GeckoLib 5 APIs.
-Do not mix GeckoLib 5 APIs/classes with GeckoLib 4 APIs/classes.
+Create ONLY the prerequisites/foundation required for the boss implementation.
 
-If GeckoLib is already present:
+Create or modify the necessary Java files, registration classes, constants/configuration classes, and resources required to support the boss.
 
-* Reuse the existing dependency.
-* Do not add a duplicate dependency.
-* Verify that the existing version is compatible with Minecraft 1.20.1.
+The implementation must include:
 
-PREPARE THE ARCHITECTURE FOR THESE FUTURE FILES:
+1. Entity registration
 
-Entity:
+   * Register `elemental:everliving_knight`.
+   * Use a proper Fabric 1.20.1 entity registration approach.
+   * Configure the entity with the required dimensions suitable for a large armored knight.
+   * Set appropriate tracking range and update rate.
+   * Make the entity summonable/spawnable through commands for testing.
 
-* SirSolvaneEntity.java
-* SolvaneState.java
-* SolvaneEntityAttributes.java if needed
-* SolvaneBossBar.java if needed
+2. Entity class architecture
+   Create a dedicated entity class such as:
 
-Renderer/model infrastructure:
+   `EverlivingKnightEntity`
 
-* SirSolvaneModel.java
-* SirSolvaneRenderer.java
+   It must be designed so the following systems can be cleanly implemented later:
 
-Registration:
+   * Three combat phases.
+   * Boss bar.
+   * Core integrity.
+   * Regeneration.
+   * Attack cooldowns.
+   * Attack windups/recovery.
+   * Elemental reactions.
+   * Arena boundaries.
+   * GeckoLib animations.
+   * Network-synchronized animation triggers.
 
-* ModEntities.java or the project's existing entity registry
-* Client-side renderer registration
+3. Boss state system
 
-Resources to prepare:
+   Create clearly named state fields/enums/constants for:
 
-* assets/elemental/geo/
-* assets/elemental/animations/
-* assets/elemental/textures/entity/
-* appropriate entity-related JSON/resource locations
+   * Phase 1
+   * Phase 2
+   * Phase 3
+   * Current attack
+   * Attack cooldowns
+   * Attack windup state
+   * Recovery state
+   * Core integrity
+   * Core broken state
+   * Staggered state
+   * Enrage state
+   * Arena center
+   * Arena radius
 
-The future boss must use GeckoLib's entity animation architecture.
+4. Core system foundation
 
-DEFINE THESE CORE CONSTANTS FOR THE FUTURE IMPLEMENTATION:
+   The boss must have persistent state for:
 
-Boss:
+   * `coreIntegrity`
+   * `coreBroken`
+   * regeneration state
+   * Frostburst healing lock timer
+   * Thorn Cage healing modifier
+   * stagger state
 
-* Max health: 800 HP
-* Attack damage: 14
-* Armor: 16
-* Armor toughness: 6
-* Knockback resistance: 0.9
-* Movement speed: 0.25
-* Recommended arena boundary: 29 × 29 blocks
-* Phases: 3
+   Core integrity starts at 100.
 
-Regeneration:
+5. Persistent data
 
-* Base regeneration: 2% of maximum health per second
-* At 800 HP: 16 HP per second
-* Normal regeneration multiplier: 1.0
-* Thorn Cage regeneration multiplier: 0.40
-* Frostburst regeneration: 0
-* Core broken regeneration: 0
+   Use appropriate Minecraft 1.20.1 entity persistent-data/NBT mechanisms so important boss state survives where appropriate.
 
-Core:
+6. Boss bar foundation
 
-* Initial integrity: 100
-* Thorn Cage damage: 20 integrity
-* Required successful Thorn Cage uses: 5
-* Core broken when integrity reaches 0
+   Create a server-side boss bar:
 
-Timers:
+   * Name: `Sir Solvane, the Everliving Knight`
+   * Red progress bar
+   * Progress based on current health.
 
-* Frostburst freeze duration: 300 ticks
-* Solar Arc wind-up: 15 ticks
-* Solar Arc active window: 3 ticks
-* Solar Arc range: 8 blocks
-* Frostburst wind-up: 20 ticks
-* Frostburst radius: 5 blocks
-* Thorn Cage wind-up: 25 ticks
-* Thorn Cage root duration on boss: 100 ticks
+7. Attribute foundation
 
-DEFINE THESE ENUMS/STATES FOR THE FUTURE BOSS IMPLEMENTATION:
+   Register/configure the boss attributes from the guide:
 
-RegenerationState:
+   * Max Health: 800 HP
+   * Attack Damage: 14.0
+   * Armor: 16
+   * Armor Toughness: 6.0
+   * Knockback Resistance: 0.9
+   * Base Movement Speed: 0.25
+   * Follow Range: 48 blocks
 
-* NORMAL
-* FROZEN
-* SLOWED
-* FROZEN_AND_SLOWED
-* DISABLED
+8. Testing support
 
-SolvaneState:
+   Make the entity usable with:
 
-* INTRO
-* PATROL
-* CHASE
-* ATTACK_WINDUP
-* ATTACK_ACTIVE
-* ATTACK_RECOVERY
-* REGENERATING
-* FROST_FROZEN
-* THORN_CAGED
-* CORE_EXPOSED
-* STAGGERED
-* PHASE_TRANSITION
-* ENRAGED
-* DEATH
+   `/summon elemental:everliving_knight`
 
-STATE PRIORITY:
+   and ensure it can be spawned during development without requiring a crafting recipe or other item.
 
-1. DEATH
-2. PHASE_TRANSITION
-3. CORE_EXPOSED
-4. STAGGERED
-5. FROST_FROZEN
-6. THORN_CAGED
-7. ATTACK
-8. CHASE
-9. PATROL
+## IMPORTANT IMPLEMENTATION RULES
 
-SERVER/CLIENT RULE:
-All gameplay authority must remain server-side.
-The client must never be trusted for:
+* Do not create crafting recipes.
+* Do not create unrelated items.
+* Do not change the mod ID.
+* Do not change the Minecraft version.
+* Do not use Forge/NeoForge APIs.
+* Use Fabric/Yarn APIs appropriate for Minecraft 1.20.1.
+* Do not use APIs from newer Minecraft versions.
+* Keep server logic separate from client rendering/animation logic.
+* Avoid deprecated or version-incompatible methods when a 1.20.1-compatible alternative exists.
+* Keep the code modular rather than putting the entire boss into one enormous class.
 
-* damage amount
-* core damage
-* cooldown validation
-* regeneration state
-* phase state
-* boss death condition
-* Frostburst duration
-* Solar Arc 5% health removal
-* Thorn Cage core damage
+## OUTPUT
 
-Prepare clean interfaces/methods so the next prompt can implement these mechanics without rewriting the project.
+Create the actual files required by the existing project.
 
-WEAPON IDENTIFICATION:
-The future boss code must identify the custom weapons by registered Item identity, not by display name, lore, NBT text, or client-provided strings.
+For every created/modified file:
 
-Expected registered items:
+1. Give the exact path.
+2. Give the complete file contents.
+3. Explain briefly what the file does.
+4. Clearly identify any dependency that must be added to `build.gradle`.
 
-* ModItems.SUNFORGED_SCIMITAR
-* ModItems.FROSTWAKE_PICK
-* ModItems.ROOTBOUND_AXE
-
-Before finishing:
-
-1. Run/validate Gradle configuration.
-2. Make sure imports use the correct 1.20.1 Yarn mappings.
-3. Ensure there are no GeckoLib 5 imports.
-4. Ensure the entity architecture is ready for server/client separation.
-5. Ensure all created files compile.
-6. Do not create placeholder code that requires nonexistent classes without clearly creating those prerequisite classes.
-
-OUTPUT:
-Provide the exact files you created or modified.
-For every file, explain its purpose briefly.
-Then provide the exact Gradle/resource changes required.
-Finally provide a checklist showing that the project is ready for Prompt 2.
+Do not implement the complete combat system yet. Build a clean foundation that the next implementation stage can extend without rewriting the architecture.

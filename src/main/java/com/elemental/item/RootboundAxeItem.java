@@ -336,12 +336,16 @@ public class RootboundAxeItem extends AxeItem implements GeoItem {
 
         for (Entity entity : world.getOtherEntities(user, area)) {
             if (entity instanceof LivingEntity living) {
-                // Apply piercing damage to regular entities
-                living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
+                if (living instanceof com.elemental.entity.EverlivingKnightEntity knight) {
+                    knight.applyThornCageReaction();
+                } else {
+                    // Apply piercing damage to regular entities
+                    living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
 
-                // Apply slowness
-                living.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
+                    // Apply slowness
+                    living.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
+                }
             }
         }
 
