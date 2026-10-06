@@ -1,6 +1,8 @@
 package com.elemental.item;
 
 import com.elemental.Elemental;
+import com.elemental.entity.EverlivingKnightEntity;
+import com.elemental.entity.ModEntityTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.item.TooltipContext;
@@ -33,11 +35,20 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class RootboundAxeItem extends AxeItem {
+public class RootboundAxeItem extends AxeItem implements GeoItem {
 
     // Durability (diamond-tier equivalent: 1561, netherite-tier: 2031; balanced around diamond)
     public static final int DURABILITY = 1800;
@@ -52,14 +63,14 @@ public class RootboundAxeItem extends AxeItem {
     public static final float WOOD_MINING_SPEED = 10.0f;
 
     // Sweep attack configuration
-    public static final float SWEEP_ATTACK_RADIUS = 2.5f;
+    public static final float SWEEP_ATTACK_RADIUS = 6.0f;
     public static final float SWEEP_ANGLE = 180.0f; // degrees (vanilla axe is ~120)
 
     // Passive: Healing Root configuration
     public static final double PASSIVE_TRIGGER_CHANCE = 0.15; // 15% chance on hit
-    public static final double CRIT_TRIGGER_CHANCE = 0.30; // 30% chance on crit
-    public static final int HEALING_ROOT_DURATION_BASE = 100; // 5 seconds in ticks
-    public static final int HEALING_ROOT_DURATION_FOREST_BONUS = 60; // +3 seconds in forest/jungle
+    public static final double CRIT_TRIGGER_CHANCE = 0.50; // 50% chance on crit
+    public static final int HEALING_ROOT_DURATION_BASE = 200; // 10 seconds in ticks
+    public static final int HEALING_ROOT_DURATION_FOREST_BONUS = 100; // +5 seconds in forest/jungle
     public static final double HEALING_ROOT_RADIUS_BASE = 3.0;
     public static final double HEALING_ROOT_RADIUS_FOREST_BONUS = 1.5;
     public static final int REGENERATION_DURATION_BASE = 60; // 3 seconds
@@ -68,9 +79,9 @@ public class RootboundAxeItem extends AxeItem {
     public static final int REGENERATION_AMPLIFIER_FOREST_BONUS = 1; // Regeneration II
 
     // Active: Thorn Cage configuration
-    public static final int BASE_COOLDOWN_TICKS = 400; // 20 seconds
+    public static final int BASE_COOLDOWN_TICKS = 300; // 15 seconds
     public static final int FOREST_COOLDOWN_TICKS = 300; // 15 seconds in forest/jungle
-    public static final double THORN_CAGE_RADIUS = 4.0;
+    public static final double THORN_CAGE_RADIUS = 10.0;
     public static final int THORN_CAGE_DURATION = 100; // 5 seconds
     public static final int THORN_CAGE_DAMAGE_TICK_INTERVAL = 10; // every 0.5 seconds
     public static final float THORN_CAGE_DAMAGE_PER_TICK = 2.0f;
@@ -89,12 +100,53 @@ public class RootboundAxeItem extends AxeItem {
             new Identifier("minecraft", "is_forest")
     );
 
+    // GeckoLib animation definitions
+    private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.rootbound_axe.idle");
+    private static final RawAnimation WIDE_SWEEP_ANIM = RawAnimation.begin().thenPlay("animation.rootbound_axe.wide_sweep");
+    private static final RawAnimation THORN_CAGE_ANIM = RawAnimation.begin().thenPlay("animation.rootbound_axe.thorn_cage");
+    private static final RawAnimation HEALING_ROOT_ANIM = RawAnimation.begin().thenPlay("animation.rootbound_axe.healing_root");
+    private static final RawAnimation EQUIP_ANIM = RawAnimation.begin().thenPlay("animation.rootbound_axe.equip");
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
+
+    // Client renderer hook
+    public static Consumer<Consumer<Object>> RENDER_PROVIDER_CONSUMER;
+
     public RootboundAxeItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
         super(toolMaterial, attackDamage, attackSpeed, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
     public RootboundAxeItem(Settings settings) {
         super(RootboundAxeToolMaterial.INSTANCE, BASE_ATTACK_DAMAGE, BASE_ATTACK_SPEED, settings);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
+    }
+
+    @Override
+    public void createRenderer(Consumer<Object> consumer) {
+        if (RENDER_PROVIDER_CONSUMER != null) {
+            RENDER_PROVIDER_CONSUMER.accept(consumer);
+        }
+    }
+
+    @Override
+    public Supplier<Object> getRenderProvider() {
+        return this.renderProvider;
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "main", 4, state -> state.setAndContinue(IDLE_ANIM))
+                .triggerableAnim("wide_sweep", WIDE_SWEEP_ANIM)
+                .triggerableAnim("thorn_cage", THORN_CAGE_ANIM)
+                .triggerableAnim("healing_root", HEALING_ROOT_ANIM)
+                .triggerableAnim("equip", EQUIP_ANIM));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override
@@ -145,6 +197,8 @@ public class RootboundAxeItem extends AxeItem {
      */
     private void performSweepAttack(ServerWorld world, LivingEntity attacker, ItemStack stack, LivingEntity primaryTarget) {
         if (!(attacker instanceof PlayerEntity)) return;
+
+        triggerAnim(attacker, GeoItem.getOrAssignId(stack, world), "main", "wide_sweep");
 
         float attackAngle = SWEEP_ANGLE;
         float attackRadius = SWEEP_ATTACK_RADIUS;
@@ -205,6 +259,8 @@ public class RootboundAxeItem extends AxeItem {
      * Spawns a healing root at the given position.
      */
     private void spawnHealingRoot(ServerWorld world, BlockPos pos, LivingEntity source, ItemStack stack) {
+        triggerAnim(source, GeoItem.getOrAssignId(stack, world), "main", "healing_root");
+
         // Check biome for forest/jungle bonus
         boolean isForestJungle = world.getBiome(pos).isIn(FOREST_JUNGLE_BIOMES);
 
@@ -264,6 +320,8 @@ public class RootboundAxeItem extends AxeItem {
      * Performs the active Thorn Cage ability.
      */
     private void performThornCage(ServerWorld world, PlayerEntity user, ItemStack stack, Hand hand) {
+        triggerAnim(user, GeoItem.getOrAssignId(stack, world), "main", "thorn_cage");
+
         Vec3d center = user.getPos();
         BlockPos centerPos = user.getBlockPos();
 
@@ -278,13 +336,18 @@ public class RootboundAxeItem extends AxeItem {
         );
 
         for (Entity entity : world.getOtherEntities(user, area)) {
-            if (entity instanceof LivingEntity living && !isBoss(living)) {
-                // Apply piercing damage
-                living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
+            if (entity instanceof LivingEntity living) {
+                if (isBoss(living) && entity instanceof EverlivingKnightEntity knight) {
+                    // Boss interaction: reduce core integrity, slow regeneration, root boss
+                    knight.applyThornCage();
+                } else if (!isBoss(living)) {
+                    // Apply piercing damage to regular entities
+                    living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
 
-                // Apply slowness
-                living.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
+                    // Apply slowness
+                    living.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
+                }
             }
         }
 
@@ -320,13 +383,6 @@ public class RootboundAxeItem extends AxeItem {
      */
     private boolean isBoss(LivingEntity entity) {
         return entity.getType().isIn(ModEntityTags.BOSSES);
-    }
-
-    public class ModEntityTags {
-        public static final TagKey<EntityType<?>> BOSSES = TagKey.of(
-                RegistryKeys.ENTITY_TYPE,
-                new Identifier(Elemental.MOD_ID, "bosses")
-        );
     }
 
     @Override

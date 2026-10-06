@@ -56,7 +56,7 @@ public class SunforgedScimitarItem extends SwordItem implements GeoItem {
     public static final int BASE_COOLDOWN_TICKS = 240;
 
     // Maximum charge time in ticks (20 ticks = 1 second, 40 = 2 seconds)
-    public static final int MAX_CHARGE_TICKS = 40;
+    public static final int MAX_CHARGE_TICKS = 500;
     // Minimum charge time before projectile can fire
     public static final int MIN_CHARGE_TICKS = 5;
 

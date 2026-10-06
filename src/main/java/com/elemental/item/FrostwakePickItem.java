@@ -1,6 +1,8 @@
 package com.elemental.item;
 
 import com.elemental.Elemental;
+import com.elemental.entity.EverlivingKnightEntity;
+import com.elemental.entity.ModEntityTags;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
@@ -115,7 +117,7 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "controller", 4, state -> {
+        controllers.add(new AnimationController<>(this, "controller", 0, state -> {
             return state.setAndContinue(IDLE_ANIM);
         }).triggerableAnim("swing", SWING_ANIM)
           .triggerableAnim("cooldown", COOLDOWN_ANIM)
@@ -227,9 +229,14 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
                 center.x + radius, center.y + radius, center.z + radius);
 
         for (Entity entity : world.getOtherEntities(user, area)) {
-            if (entity instanceof LivingEntity living && !isBoss(living)) {
-                int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
-                living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
+            if (entity instanceof LivingEntity living) {
+                if (isBoss(living) && entity instanceof EverlivingKnightEntity knight) {
+                    // Boss interaction: freeze regeneration for 300 ticks
+                    knight.applyFrostburst();
+                } else if (!isBoss(living)) {
+                    int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
+                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
+                }
             }
         }
 
@@ -266,13 +273,6 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
         user.getItemCooldownManager().set(this, cooldown);
 
         stack.damage(2, user, (p) -> p.sendToolBreakStatus(Hand.MAIN_HAND));
-    }
-
-    public class ModEntityTags {
-        public static final TagKey<EntityType<?>> BOSSES = TagKey.of(
-                RegistryKeys.ENTITY_TYPE,
-                new Identifier(Elemental.MOD_ID, "bosses")
-        );
     }
 
     private boolean isBoss(LivingEntity entity) {

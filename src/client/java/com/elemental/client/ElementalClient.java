@@ -1,10 +1,13 @@
 package com.elemental.client;
 
 import com.elemental.client.renderer.FrostwakePickRenderer;
+import com.elemental.client.renderer.RootboundAxeRenderer;
 import com.elemental.client.renderer.SolarArcRenderer;
 import com.elemental.client.renderer.SunforgedScimitarRenderer;
+import com.elemental.client.renderer.EverlivingKnightRenderer;
 import com.elemental.entity.ModEntities;
 import com.elemental.item.FrostwakePickItem;
+import com.elemental.item.RootboundAxeItem;
 import com.elemental.item.SunforgedScimitarItem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -44,7 +47,25 @@ public class ElementalClient implements ClientModInitializer {
 			});
 		};
 
+		// Register GeckoLib custom renderer for the Rootbound Axe item
+		RootboundAxeItem.RENDER_PROVIDER_CONSUMER = (consumer) -> {
+			consumer.accept(new RenderProvider() {
+				private RootboundAxeRenderer renderer;
+
+				@Override
+				public BuiltinModelItemRenderer getCustomRenderer() {
+					if (this.renderer == null) {
+						this.renderer = new RootboundAxeRenderer();
+					}
+					return this.renderer;
+				}
+			});
+		};
+
 		// Register GeckoLib animated renderer for the Solar Arc projectile
 		EntityRendererRegistry.register(ModEntities.SOLAR_ARC, SolarArcRenderer::new);
+
+		// Register GeckoLib animated renderer for the Everliving Knight boss
+		EntityRendererRegistry.register(ModEntities.EVERLIVING_KNIGHT, EverlivingKnightRenderer::new);
 	}
 }

@@ -51,12 +51,6 @@ public class SunforgedHeatHandler {
         if (stack != null && !stack.isEmpty() && stack.getItem() instanceof SunforgedScimitarItem) {
             RegistryEntry<Biome> biomeEntry = world.getBiome(player.getBlockPos());
             float temperature = biomeEntry.value().getTemperature();
-            boolean isHotBiome = temperature >= 1.0f
-                    || biomeEntry.isIn(BiomeTags.IS_BADLANDS)
-                    || biomeEntry.matchesKey(BiomeKeys.DESERT)
-                    || biomeEntry.matchesKey(BiomeKeys.SAVANNA)
-                    || biomeEntry.matchesKey(BiomeKeys.SAVANNA_PLATEAU)
-                    || biomeEntry.matchesKey(BiomeKeys.WINDSWEPT_SAVANNA);
 
             boolean isDirectSunlight = world.isDay()
                     && !world.isRaining()
@@ -65,7 +59,7 @@ public class SunforgedHeatHandler {
 
             int currentHeat = SunforgedScimitarItem.getHeatLevel(stack);
 
-            if (isHotBiome && isDirectSunlight) {
+            if (isDirectSunlight) {
                 currentHeat = Math.min(SunforgedScimitarItem.MAX_HEAT, currentHeat + SunforgedScimitarItem.HEAT_GAIN_RATE);
             } else {
                 currentHeat = Math.max(0, currentHeat - SunforgedScimitarItem.HEAT_DECAY_RATE);

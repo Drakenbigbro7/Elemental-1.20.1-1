@@ -1,5 +1,6 @@
 package com.elemental.entity;
 
+import com.elemental.entity.EverlivingKnightEntity;
 import com.elemental.item.SunforgedScimitarItem;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -130,8 +131,14 @@ public class SolarArcEntity extends PersistentProjectileEntity implements GeoEnt
                 float dmg = wetConditions ? (this.damage * RAIN_DAMAGE_MULTIPLIER) : this.damage;
                 int fireSecs = wetConditions ? RAIN_FIRE_SECONDS : (BASE_FIRE_SECONDS + this.solarCoreLevel * CORE_FIRE_BONUS_SECONDS);
 
-                entity.damage(this.getDamageSources().magic(), dmg);
-                entity.setOnFireFor(fireSecs);
+                // Check if hitting the Everliving Knight boss
+                if (entity instanceof EverlivingKnightEntity knight && this.getOwner() instanceof PlayerEntity player) {
+                    // Solar Arc boss interaction: remove 5% max health (40 HP for 800 HP boss)
+                    knight.applySolarArcDamage(player);
+                } else {
+                    entity.damage(this.getDamageSources().magic(), dmg);
+                    entity.setOnFireFor(fireSecs);
+                }
             }
 
             // Spawn solar burst particles and sound on impact
