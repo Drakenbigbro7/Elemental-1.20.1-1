@@ -25,7 +25,7 @@ public class ModItems {
     );
     public static final Item FROSTWAKE_PICK = Registry.register(
             Registries.ITEM,
-            new Identifier(Elemental.MOD_ID,"frostwake_pick"),
+            new Identifier(Elemental.MOD_ID, "frostwake_pick"),
             new FrostwakePickItem(
                     FrostwakePickToolMaterial.INSTANCE,
                     FrostwakePickItem.BASE_ATTACK_DAMAGE,
@@ -44,16 +44,8 @@ public class ModItems {
             )
     );
 
-    public static void registerModItems() {
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(SUNFORGED_SCIMITAR));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(SUNFORGED_SCIMITAR));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(FROSTWAKE_PICK));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(FROSTWAKE_PICK));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(ROOTBOUND_AXE));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ROOTBOUND_AXE));
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ROOTBOUND_AXE));
-    }
-
+    public static final Item STENCIL = registerItem("stencil",
+            new Item(new FabricItemSettings()));
     public static final Item ELEMENT_CORE = registerItem("element_core",
             new Item(new FabricItemSettings()));
     public static final Item DRY_HEAT_ELEMENT = registerItem("dry_heat_element",
@@ -69,19 +61,29 @@ public class ModItems {
     public static final Item FIRE_ELEMENT = registerItem("fire_element",
             new Item(new FabricItemSettings()));
 
+    public static void registerModItems() {
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(SUNFORGED_SCIMITAR));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(SUNFORGED_SCIMITAR));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(FROSTWAKE_PICK));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(FROSTWAKE_PICK));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(ROOTBOUND_AXE));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ROOTBOUND_AXE));
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
+            entries.add(STENCIL);
+            entries.add(ELEMENT_CORE);
+            entries.add(DRY_HEAT_ELEMENT);
+            entries.add(SNOW_ELEMENT);
+            entries.add(TREE_ELEMENT);
+            entries.add(OCEAN_ELEMENT);
+            entries.add(MOUNTAIN_ELEMENT);
+            entries.add(FIRE_ELEMENT);
+        });
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(entries -> entries.add(ModBlocks.WEAPONER));
+    }
+
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, new Identifier(Elemental.MOD_ID, name), item);
     }
-
-    private static void itemGroupIngredients(FabricItemGroupEntries entries) {
-        entries.add(ELEMENT_CORE);
-        entries.add(DRY_HEAT_ELEMENT);
-        entries.add(SNOW_ELEMENT);
-        entries.add(TREE_ELEMENT);
-        entries.add(OCEAN_ELEMENT);
-        entries.add(MOUNTAIN_ELEMENT);
-        entries.add(FIRE_ELEMENT);
-
-    }
-
 }

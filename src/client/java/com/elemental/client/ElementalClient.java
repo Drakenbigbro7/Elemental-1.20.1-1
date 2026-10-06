@@ -5,12 +5,15 @@ import com.elemental.client.renderer.FrostwakePickRenderer;
 import com.elemental.client.renderer.RootboundAxeRenderer;
 import com.elemental.client.renderer.SolarArcRenderer;
 import com.elemental.client.renderer.SunforgedScimitarRenderer;
+import com.elemental.client.screen.WeaponerScreen;
 import com.elemental.entity.ModEntities;
 import com.elemental.item.FrostwakePickItem;
 import com.elemental.item.RootboundAxeItem;
 import com.elemental.item.SunforgedScimitarItem;
+import com.elemental.screen.ModScreenHandlers;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import software.bernie.geckolib.animatable.client.RenderProvider;
 
@@ -67,5 +70,8 @@ public class ElementalClient implements ClientModInitializer {
 
 		// Register GeckoLib animated renderer for Sir Solvane, the Everliving Knight
 		EntityRendererRegistry.register(ModEntities.EVERLIVING_KNIGHT, EverlivingKnightRenderer::new);
+
+		// Register Weaponer screen GUI handler
+		HandledScreens.register(ModScreenHandlers.WEAPONER_SCREEN_HANDLER, WeaponerScreen::new);
 	}
 }

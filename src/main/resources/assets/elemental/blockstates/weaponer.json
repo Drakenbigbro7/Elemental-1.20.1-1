@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "elemental:block/weaponer"
+    },
+    "facing=south": {
+      "model": "elemental:block/weaponer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "elemental:block/weaponer",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "elemental:block/weaponer",
+      "y": 90
+    }
+  }
+}

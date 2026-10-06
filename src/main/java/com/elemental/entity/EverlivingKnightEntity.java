@@ -55,12 +55,12 @@ import java.util.UUID;
 public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     // ==================== BASE ATTRIBUTES & CONSTANTS ====================
-    public static final float MAX_HEALTH = 250.0f; // Lowered HP so normal weapons feel impactful
-    public static final float BASE_ATTACK_DAMAGE = 14.0f;
-    public static final float ENRAGED_ATTACK_DAMAGE = 21.0f;
+    public static final float MAX_HEALTH = 300.0f; // Lowered HP so normal weapons feel impactful
+    public static final float BASE_ATTACK_DAMAGE = 10.0f;
+    public static final float ENRAGED_ATTACK_DAMAGE = 16.0f;
     public static final int BASE_ARMOR = 8; // Lowered armor from 16 to 8
-    public static final float BASE_ARMOR_TOUGHNESS = 2.0f; // Lowered toughness from 6.0 to 2.0
-    public static final double BASE_KNOCKBACK_RESISTANCE = 0.9;
+    public static final float BASE_ARMOR_TOUGHNESS = 3.0f; // Lowered toughness from 6.0 to 2.0
+    public static final double BASE_KNOCKBACK_RESISTANCE = 0.5;
     public static final double BASE_MOVEMENT_SPEED = 0.25;
     public static final double FOLLOW_RANGE = 48.0;
 

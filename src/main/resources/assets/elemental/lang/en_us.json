@@ -1,7 +1,20 @@
 {
+  "block.elemental.weaponer": "Weaponer",
+  "item.elemental.weaponer": "Weaponer",
+  "container.elemental.weaponer": "Weaponer",
+  "item.elemental.stencil": "Weapon Stencil",
+  "item.elemental.element_core": "Element Core",
+  "item.elemental.dry_heat_element": "Dry Heat Element",
+  "item.elemental.snow_element": "Snow Element",
+  "item.elemental.tree_element": "Tree Element",
+  "item.elemental.ocean_element": "Ocean Element",
+  "item.elemental.mountain_element": "Mountain Element",
+  "item.elemental.fire_element": "Fire Element",
   "item.elemental.sunforged_scimitar": "Sunforged Scimitar",
   "entity.elemental.solar_arc": "Solar Arc",
   "item.elemental.frostwake_pick": "Frostwake Pick",
   "item.elemental.rootbound_axe": "Rootbound Axe",
-  "entity.elemental.everliving_knight": "Sir Solvane, the Everliving Knight"
+  "entity.elemental.everliving_knight": "Everliving Knight",
+  "itemgroup.elemental_ingredient_group": "Elemental Ingredient",
+  "itemgroup.elemental_weapon_group": "Elemental Weapon"
 }

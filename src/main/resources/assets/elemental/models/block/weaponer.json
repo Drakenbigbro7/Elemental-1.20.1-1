@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "elemental:block/weaponer_top",
+    "front": "elemental:block/weaponer_front",
+    "side": "elemental:block/weaponer_side",
+    "bottom": "elemental:block/weaponer_bottom"
+  }
+}
