@@ -1,7 +1,6 @@
 package com.elemental.item;
 
 import com.elemental.Elemental;
-import com.elemental.entity.EverlivingKnightEntity;
 import com.elemental.entity.ModEntityTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -337,17 +336,12 @@ public class RootboundAxeItem extends AxeItem implements GeoItem {
 
         for (Entity entity : world.getOtherEntities(user, area)) {
             if (entity instanceof LivingEntity living) {
-                if (isBoss(living) && entity instanceof EverlivingKnightEntity knight) {
-                    // Boss interaction: reduce core integrity, slow regeneration, root boss
-                    knight.applyThornCage();
-                } else if (!isBoss(living)) {
-                    // Apply piercing damage to regular entities
-                    living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
+                // Apply piercing damage to regular entities
+                living.damage(user.getDamageSources().thorns(user), THORN_CAGE_DAMAGE_PER_TICK);
 
-                    // Apply slowness
-                    living.addStatusEffect(new StatusEffectInstance(
-                            StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
-                }
+                // Apply slowness
+                living.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.SLOWNESS, THORN_CAGE_SLOW_DURATION, THORN_CAGE_SLOW_LEVEL - 1, false, false, true));
             }
         }
 

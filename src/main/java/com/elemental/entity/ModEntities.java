@@ -8,7 +8,6 @@ import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
 public class ModEntities {
     public static final EntityType<SolarArcEntity> SOLAR_ARC = Registry.register(
@@ -21,18 +20,7 @@ public class ModEntities {
                     .build()
     );
 
-    public static final EntityType<EverlivingKnightEntity> EVERLIVING_KNIGHT = Registry.register(
-            Registries.ENTITY_TYPE,
-            Elemental.id("everliving_knight"),
-            FabricEntityTypeBuilder.<EverlivingKnightEntity>create(SpawnGroup.MONSTER, EverlivingKnightEntity::new)
-                    .dimensions(EntityDimensions.fixed(1.8f, 2.5f))
-                    .trackRangeBlocks(80)
-                    .trackedUpdateRate(5)
-                    .build()
-    );
-
     public static void registerModEntities() {
         Elemental.LOGGER.info("Registering mod entities for " + Elemental.MOD_ID);
-        FabricDefaultAttributeRegistry.register(EVERLIVING_KNIGHT, EverlivingKnightEntity.createKnightAttributes());
     }
 }

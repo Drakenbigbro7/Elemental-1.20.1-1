@@ -1,7 +1,6 @@
 package com.elemental.item;
 
 import com.elemental.Elemental;
-import com.elemental.entity.EverlivingKnightEntity;
 import com.elemental.entity.ModEntityTags;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryKeys;
@@ -230,13 +229,8 @@ public class FrostwakePickItem extends PickaxeItem implements GeoItem {
 
         for (Entity entity : world.getOtherEntities(user, area)) {
             if (entity instanceof LivingEntity living) {
-                if (isBoss(living) && entity instanceof EverlivingKnightEntity knight) {
-                    // Boss interaction: freeze regeneration for 300 ticks
-                    knight.applyFrostburst();
-                } else if (!isBoss(living)) {
-                    int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
-                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
-                }
+                int slowLevel = hasGlacialCore(stack) ? ACTIVE_SLOW_LEVEL_UPGRADED : ACTIVE_SLOW_LEVEL;
+                living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, ACTIVE_SLOW_DURATION, slowLevel - 1, false, false, true));
             }
         }
 

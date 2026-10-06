@@ -4,7 +4,6 @@ import com.elemental.client.renderer.FrostwakePickRenderer;
 import com.elemental.client.renderer.RootboundAxeRenderer;
 import com.elemental.client.renderer.SolarArcRenderer;
 import com.elemental.client.renderer.SunforgedScimitarRenderer;
-import com.elemental.client.renderer.EverlivingKnightRenderer;
 import com.elemental.entity.ModEntities;
 import com.elemental.item.FrostwakePickItem;
 import com.elemental.item.RootboundAxeItem;
@@ -65,7 +64,5 @@ public class ElementalClient implements ClientModInitializer {
 		// Register GeckoLib animated renderer for the Solar Arc projectile
 		EntityRendererRegistry.register(ModEntities.SOLAR_ARC, SolarArcRenderer::new);
 
-		// Register GeckoLib animated renderer for the Everliving Knight boss
-		EntityRendererRegistry.register(ModEntities.EVERLIVING_KNIGHT, EverlivingKnightRenderer::new);
 	}
 }
