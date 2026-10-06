@@ -64,9 +64,9 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public static final double BASE_MOVEMENT_SPEED = 0.25;
     public static final double FOLLOW_RANGE = 48.0;
 
-    // Movement Speeds
-    public static final double CHASE_SPEED_NORMAL = 1.35;
-    public static final double CHASE_SPEED_PHASE3 = 1.60;
+    // Adjusted Movement Speeds for fair single-player kiting & maneuvering
+    public static final double CHASE_SPEED_NORMAL = 1.15;
+    public static final double CHASE_SPEED_PHASE3 = 1.35;
 
     // Regeneration
     public static final float BASE_REGEN_PER_SECOND = 16.0f; // 2% max HP per second
@@ -76,10 +76,16 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public static final int THORN_CAGE_DURATION_TICKS = 100; // 5 seconds
     public static final int MAX_CORE_INTEGRITY = 100;
     public static final int CORE_DAMAGE_PER_THORN_CAGE = 20;
+    public static final int CORE_DAMAGE_DURING_FLEX = 30; // Bonus core damage when punishing during roar/flex
 
     // Stagger & Enrage
     public static final int STAGGER_DURATION = 100; // 5 seconds vulnerability
     public static final int ENRAGE_COUNTDOWN_TICKS = 600; // 30 seconds
+
+    // Roar & Flex Window (2.75 seconds breather / preparation window)
+    public static final int ROAR_FLEX_DURATION = 55; // ~2.75 seconds
+    public static final int ATTACKS_BETWEEN_ROARS = 3; // Roars after every 3 attacks
+    public static final int GLOBAL_ATTACK_REST_TICKS = 35; // ~1.75 seconds rest between attacks
 
     // Arena boundary
     public static final double ARENA_RADIUS = 14.0;
@@ -117,6 +123,8 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
             DataTracker.registerData(EverlivingKnightEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> DATA_ENRAGED =
             DataTracker.registerData(EverlivingKnightEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> DATA_ROARING =
+            DataTracker.registerData(EverlivingKnightEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     // ==================== GECKOLIB ANIMATIONS ====================
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.everliving_knight.idle");
@@ -124,6 +132,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     private static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("animation.everliving_knight.run");
     private static final RawAnimation STAGGER_LOOP = RawAnimation.begin().thenLoop("animation.everliving_knight.stagger");
     private static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlayAndHold("animation.everliving_knight.death");
+    private static final RawAnimation ROAR_FLEX_ANIM = RawAnimation.begin().thenPlay("animation.everliving_knight.phase_two");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final ServerBossBar bossBar;
@@ -138,13 +147,19 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     private int enrageCountdown = ENRAGE_COUNTDOWN_TICKS;
     private boolean enrageStarted = false;
 
+    // Roar / Flexing & Attack Cadence Pacing
+    private int roarFlexTicks = 0;
+    private int attacksSinceLastRoar = 0;
+    private int combatRoarCooldown = 240; // 12 seconds auto-flex timer
+    private int globalAttackCooldown = 0; // Breather between attacks
+
     // Attack State Machine
     private AttackType currentAttack = AttackType.NONE;
     private AttackPhase currentAttackPhase = AttackPhase.IDLE;
     private int attackTimer = 0;
     private final Set<UUID> activeDamagedEntities = new HashSet<>();
 
-    // Attack Cooldowns
+    // Attack Cooldowns (tuned for fair single-player combat)
     private int slashCooldown = 0;
     private int shieldBashCooldown = 0;
     private int chargeCooldown = 0;
@@ -206,6 +221,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         this.dataTracker.startTracking(DATA_STAGGERED, false);
         this.dataTracker.startTracking(DATA_ENRAGE_TIMER, 0);
         this.dataTracker.startTracking(DATA_ENRAGED, false);
+        this.dataTracker.startTracking(DATA_ROARING, false);
     }
 
     // ==================== GECKOLIB CONTROLLERS ====================
@@ -217,6 +233,9 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
             }
             if (this.isStaggered()) {
                 return state.setAndContinue(STAGGER_LOOP);
+            }
+            if (this.isRoaringFlexing()) {
+                return state.setAndContinue(ROAR_FLEX_ANIM);
             }
             if (state.isMoving()) {
                 return state.setAndContinue(this.isEnraged() || this.getPhase() == 3 ? RUN_ANIM : WALK_ANIM);
@@ -284,6 +303,10 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         return this.dataTracker.get(DATA_STAGGERED);
     }
 
+    public boolean isRoaringFlexing() {
+        return this.dataTracker.get(DATA_ROARING);
+    }
+
     public boolean isEnraged() {
         return this.dataTracker.get(DATA_ENRAGED);
     }
@@ -307,8 +330,14 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         this.arenaCenter = center;
     }
 
+    /**
+     * Checks if knight is actively engaged in an action, roaring, resting, or staggered.
+     */
     public boolean isBusy() {
-        return this.currentAttackPhase != AttackPhase.IDLE || this.isStaggered();
+        return this.currentAttackPhase != AttackPhase.IDLE
+                || this.isStaggered()
+                || this.isRoaringFlexing()
+                || this.globalAttackCooldown > 0;
     }
 
     public AttackType getCurrentAttack() {
@@ -398,20 +427,63 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         }
     }
 
+    // ==================== ROAR / CORE FLEXING MECHANIC ====================
+    /**
+     * Initiates a 2-3 second roar/flexing window.
+     * The knight stops moving and roars with core radiant particles,
+     * giving the player an unmistakable window to prepare and strike the core!
+     */
+    public void startRoarFlex() {
+        if (this.getWorld().isClient() || isCoreBroken() || isStaggered()) return;
+
+        this.roarFlexTicks = ROAR_FLEX_DURATION;
+        this.attacksSinceLastRoar = 0;
+        this.combatRoarCooldown = 260; // ~13 seconds between auto-roars
+        this.dataTracker.set(DATA_ROARING, true);
+
+        this.getNavigation().stop();
+        this.setVelocity(0, this.getVelocity().y, 0);
+
+        triggerAnimation("phase_two");
+
+        if (this.getWorld() instanceof ServerWorld world) {
+            world.playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.ENTITY_RAVAGER_ROAR, SoundCategory.HOSTILE, 1.8f, 0.75f);
+            world.playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.HOSTILE, 1.4f, 0.85f);
+            world.spawnParticles(ParticleTypes.FLASH, this.getX(), this.getY() + 1.4, this.getZ(),
+                    2, 0.1, 0.1, 0.1, 0.0);
+            world.spawnParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 1.4, this.getZ(),
+                    30, 0.6, 0.6, 0.6, 0.1);
+        }
+    }
+
     // ==================== ELEMENTAL REACTION API ====================
     /**
      * Applies the Thorn Cage elemental reaction.
-     * Reduces core integrity by 20, slows regeneration to 40% for 5s,
-     * and breaks core if integrity reaches 0.
+     * Reduces core integrity by 20 (or 30 if punishing during roar/flex),
+     * slows regeneration to 40% for 5s, and breaks core if integrity reaches 0.
      */
     public void applyThornCageReaction() {
         if (this.getWorld().isClient()) return;
 
-        int newIntegrity = Math.max(0, getCoreIntegrity() - CORE_DAMAGE_PER_THORN_CAGE);
+        int damage = isRoaringFlexing() ? CORE_DAMAGE_DURING_FLEX : CORE_DAMAGE_PER_THORN_CAGE;
+        int newIntegrity = Math.max(0, getCoreIntegrity() - damage);
         setCoreIntegrity(newIntegrity);
 
         this.thornCagedTicks = THORN_CAGE_DURATION_TICKS;
         triggerAnimation("thorn_cage_reaction");
+
+        if (this.getWorld() instanceof ServerWorld world) {
+            if (isRoaringFlexing()) {
+                world.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.HOSTILE, 1.0f, 1.4f);
+                world.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.6f, 1.2f);
+                world.spawnParticles(ParticleTypes.CRIT, this.getX(), this.getY() + 1.5, this.getZ(),
+                        25, 0.4, 0.4, 0.4, 0.15);
+            }
+        }
 
         if (newIntegrity <= 0 && !isCoreBroken()) {
             breakCore();
@@ -450,6 +522,8 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         setCoreIntegrity(0);
         this.frostFrozenTicks = 0;
         this.thornCagedTicks = 0;
+        this.roarFlexTicks = 0;
+        this.dataTracker.set(DATA_ROARING, false);
         this.dataTracker.set(DATA_REGEN_FROZEN_TICKS, 0);
         this.dataTracker.set(DATA_REGEN_MULTIPLIER, 0.0f);
 
@@ -481,16 +555,12 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
         if (current == 1 && hpRatio < 0.70f) {
             setPhase(2);
-            triggerAnimation("phase_two");
-            if (this.getWorld() instanceof ServerWorld world) {
-                world.playSound(null, this.getX(), this.getY(), this.getZ(),
-                        SoundEvents.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.HOSTILE, 1.5f, 0.8f);
-            }
+            startRoarFlex();
         } else if (current == 2 && hpRatio < 0.35f) {
             setPhase(3);
             this.enrageStarted = true;
             this.enrageCountdown = ENRAGE_COUNTDOWN_TICKS;
-            triggerAnimation("phase_three");
+            startRoarFlex();
             if (this.getWorld() instanceof ServerWorld world) {
                 world.playSound(null, this.getX(), this.getY(), this.getZ(),
                         SoundEvents.ENTITY_WITHER_SPAWN, SoundCategory.HOSTILE, 1.5f, 0.75f);
@@ -539,6 +609,38 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         if (this.shieldBashCooldown > 0) this.shieldBashCooldown--;
         if (this.chargeCooldown > 0) this.chargeCooldown--;
         if (this.corePulseCooldown > 0) this.corePulseCooldown--;
+        if (this.globalAttackCooldown > 0) this.globalAttackCooldown--;
+
+        // Handle Roar / Flexing countdown
+        if (this.roarFlexTicks > 0) {
+            this.roarFlexTicks--;
+            this.getNavigation().stop();
+            this.setVelocity(0, this.getVelocity().y, 0);
+
+            if (this.getWorld() instanceof ServerWorld world) {
+                world.spawnParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 1.4, this.getZ(),
+                        2, 0.3, 0.3, 0.3, 0.03);
+                if (this.roarFlexTicks % 6 == 0) {
+                    world.spawnParticles(ParticleTypes.GLOW, this.getX(), this.getY() + 1.2, this.getZ(),
+                            8, 0.4, 0.4, 0.4, 0.05);
+                }
+            }
+
+            if (this.roarFlexTicks <= 0) {
+                this.dataTracker.set(DATA_ROARING, false);
+                this.globalAttackCooldown = GLOBAL_ATTACK_REST_TICKS;
+            }
+            return;
+        }
+
+        // Automatic combat roar check if fighting and haven't roared recently
+        if (this.getTarget() != null && !isBusy() && !isCoreBroken()) {
+            this.combatRoarCooldown--;
+            if (this.combatRoarCooldown <= 0) {
+                startRoarFlex();
+                return;
+            }
+        }
 
         if (this.currentAttack == AttackType.NONE || this.currentAttackPhase == AttackPhase.IDLE) {
             return;
@@ -580,8 +682,8 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
             }
         } else if (this.currentAttackPhase == AttackPhase.RECOVERY) {
             if (this.attackTimer <= 0) {
-                this.slashCooldown = 30;
-                resetAttackState();
+                this.slashCooldown = 70; // 3.5s cooldown
+                onAttackCompleted();
             }
         }
     }
@@ -625,12 +727,12 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
             if (this.attackTimer <= 0) {
                 this.currentAttackPhase = AttackPhase.RECOVERY;
-                this.attackTimer = 15;
+                this.attackTimer = 20;
             }
         } else if (this.currentAttackPhase == AttackPhase.RECOVERY) {
             if (this.attackTimer <= 0) {
-                this.shieldBashCooldown = 80;
-                resetAttackState();
+                this.shieldBashCooldown = 120; // 6.0s cooldown
+                onAttackCompleted();
             }
         }
     }
@@ -653,9 +755,9 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
                 }
             }
         } else if (this.currentAttackPhase == AttackPhase.ACTIVE) {
-            // Dash at locked direction (approx 2.5x speed vector)
+            // Dash at locked direction (fair and dodgeable)
             if (this.chargeDirection != null) {
-                this.setVelocity(this.chargeDirection.x * 1.35, this.getVelocity().y, this.chargeDirection.z * 1.35);
+                this.setVelocity(this.chargeDirection.x * 1.15, this.getVelocity().y, this.chargeDirection.z * 1.15);
                 this.velocityModified = true;
 
                 // Damage intercepted entities along path
@@ -674,13 +776,13 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
             if (this.attackTimer <= 0) {
                 this.currentAttackPhase = AttackPhase.RECOVERY;
-                this.attackTimer = 30;
+                this.attackTimer = 35;
                 this.setVelocity(0, this.getVelocity().y, 0);
             }
         } else if (this.currentAttackPhase == AttackPhase.RECOVERY) {
             if (this.attackTimer <= 0) {
-                this.chargeCooldown = 120;
-                resetAttackState();
+                this.chargeCooldown = 180; // 9.0s cooldown
+                onAttackCompleted();
             }
         }
     }
@@ -720,13 +822,24 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         } else if (this.currentAttackPhase == AttackPhase.ACTIVE) {
             if (this.attackTimer <= 0) {
                 this.currentAttackPhase = AttackPhase.RECOVERY;
-                this.attackTimer = 20;
+                this.attackTimer = 25;
             }
         } else if (this.currentAttackPhase == AttackPhase.RECOVERY) {
             if (this.attackTimer <= 0) {
-                this.corePulseCooldown = 100;
-                resetAttackState();
+                this.corePulseCooldown = 160; // 8.0s cooldown
+                onAttackCompleted();
             }
+        }
+    }
+
+    private void onAttackCompleted() {
+        this.attacksSinceLastRoar++;
+        this.globalAttackCooldown = GLOBAL_ATTACK_REST_TICKS;
+        resetAttackState();
+
+        // After every 3 attacks, enter the Roar / Core Flex window
+        if (this.attacksSinceLastRoar >= ATTACKS_BETWEEN_ROARS && !this.isStaggered() && this.getTarget() != null) {
+            startRoarFlex();
         }
     }
 
@@ -748,7 +861,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void startSlash() {
         this.currentAttack = AttackType.SLASH;
         this.currentAttackPhase = AttackPhase.WINDUP;
-        this.attackTimer = 12;
+        this.attackTimer = 16; // 0.8s telegraph
         this.activeDamagedEntities.clear();
         triggerAnimation("slash_windup");
     }
@@ -756,7 +869,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void startShieldBash() {
         this.currentAttack = AttackType.SHIELD_BASH;
         this.currentAttackPhase = AttackPhase.WINDUP;
-        this.attackTimer = 10;
+        this.attackTimer = 14; // 0.7s telegraph
         this.activeDamagedEntities.clear();
         triggerAnimation("shield_bash_windup");
     }
@@ -764,7 +877,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void startCharge(Vec3d targetPos) {
         this.currentAttack = AttackType.CHARGE;
         this.currentAttackPhase = AttackPhase.WINDUP;
-        this.attackTimer = 18;
+        this.attackTimer = 24; // 1.2s telegraph
         this.chargeTargetPos = targetPos;
         this.activeDamagedEntities.clear();
         triggerAnimation("charge_windup");
@@ -773,7 +886,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     public void startCorePulse() {
         this.currentAttack = AttackType.CORE_PULSE;
         this.currentAttackPhase = AttackPhase.WINDUP;
-        this.attackTimer = 20;
+        this.attackTimer = 26; // 1.3s telegraph
         this.activeDamagedEntities.clear();
         triggerAnimation("core_pulse_windup");
     }
@@ -825,6 +938,16 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     // ==================== BOSS BAR ====================
     private void updateBossBar() {
         this.bossBar.setPercent(MathHelper.clamp(this.getHealth() / this.getMaxHealth(), 0.0f, 1.0f));
+
+        if (isRoaringFlexing()) {
+            this.bossBar.setName(Text.literal("Sir Solvane - [CORE EXPOSED: ROARING]"));
+        } else if (isCoreBroken()) {
+            this.bossBar.setName(Text.literal("Sir Solvane - [CORE SHATTERED]"));
+        } else if (isStaggered()) {
+            this.bossBar.setName(Text.literal("Sir Solvane - [STAGGERED]"));
+        } else {
+            this.bossBar.setName(Text.literal("Sir Solvane, the Everliving Knight"));
+        }
     }
 
     @Override
@@ -863,6 +986,8 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         nbt.putInt("FrostFrozenTicks", this.frostFrozenTicks);
         nbt.putInt("ThornCagedTicks", this.thornCagedTicks);
         nbt.putInt("StaggerTicks", this.staggerTicks);
+        nbt.putInt("RoarFlexTicks", this.roarFlexTicks);
+        nbt.putInt("GlobalAttackCooldown", this.globalAttackCooldown);
         nbt.putInt("EnrageCountdown", this.enrageCountdown);
         nbt.putBoolean("EnrageStarted", this.enrageStarted);
         nbt.putBoolean("Enraged", isEnraged());
@@ -897,6 +1022,13 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         if (nbt.contains("StaggerTicks")) {
             this.staggerTicks = nbt.getInt("StaggerTicks");
             this.dataTracker.set(DATA_STAGGERED, this.staggerTicks > 0);
+        }
+        if (nbt.contains("RoarFlexTicks")) {
+            this.roarFlexTicks = nbt.getInt("RoarFlexTicks");
+            this.dataTracker.set(DATA_ROARING, this.roarFlexTicks > 0);
+        }
+        if (nbt.contains("GlobalAttackCooldown")) {
+            this.globalAttackCooldown = nbt.getInt("GlobalAttackCooldown");
         }
         if (nbt.contains("EnrageCountdown")) {
             this.enrageCountdown = nbt.getInt("EnrageCountdown");
@@ -973,8 +1105,8 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
     }
 
     /**
-     * Pursuit goal: Navigates toward target at 1.35x speed (1.6x in Phase 3).
-     * Yields control when in attack range or busy.
+     * Pursuit goal: Navigates toward target at 1.15x speed (1.35x in Phase 3).
+     * Yields control when in attack range, busy, resting, or roaring.
      */
     public static class KnightChaseTargetGoal extends Goal {
         private final EverlivingKnightEntity knight;
@@ -1028,7 +1160,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     /**
      * Melee Slash Attack Goal
-     * Trigger: Target between 4.0 and 5.5 blocks, slashCooldown == 0.
+     * Trigger: Target between 4.0 and 5.5 blocks, slashCooldown == 0, not resting.
      */
     public static class KnightMeleeSlashGoal extends Goal {
         private final EverlivingKnightEntity knight;
@@ -1063,7 +1195,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     /**
      * Shield Bash Attack Goal
-     * Trigger: Target within 4.0 blocks, ~35% chance per tick when ready.
+     * Trigger: Target within 4.0 blocks, shieldBashCooldown == 0, not resting.
      */
     public static class KnightShieldBashGoal extends Goal {
         private final EverlivingKnightEntity knight;
@@ -1080,7 +1212,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
             if (target == null || !target.isAlive() || target.isSpectator()) return false;
 
             double dist = this.knight.distanceTo(target);
-            return dist <= 4.0 && this.knight.random.nextFloat() < 0.35f;
+            return dist <= 4.0 && this.knight.random.nextFloat() < 0.20f;
         }
 
         @Override
@@ -1098,7 +1230,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     /**
      * Charge / Rush Attack Goal
-     * Trigger: Target between 4.0 and 18.0 blocks, chargeCooldown == 0.
+     * Trigger: Target between 4.0 and 18.0 blocks, chargeCooldown == 0, not resting.
      */
     public static class KnightChargeGoal extends Goal {
         private final EverlivingKnightEntity knight;
