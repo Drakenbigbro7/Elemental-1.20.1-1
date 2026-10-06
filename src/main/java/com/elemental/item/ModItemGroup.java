@@ -25,6 +25,16 @@ public class ModItemGroup {
 
 
                     }).build());
+    public static final ItemGroup ELEMENTAL_WEAPON_GROUP = Registry.register(Registries.ITEM_GROUP,
+            new Identifier(Elemental.MOD_ID, "elemental_weapon_group"),
+            FabricItemGroup.builder().displayName(Text.translatable("itemgroup.elemental_weapon_group"))
+                    .icon(() -> new ItemStack(ModItems.ELEMENT_CORE)).entries((displayContext, entries) -> {
+                        entries.add(ModItems.SUNFORGED_SCIMITAR);
+                        entries.add(ModItems.FROSTWAKE_PICK);
+                        entries.add(ModItems.ROOTBOUND_AXE);
+
+
+                    }).build());
 
     public static void registerItemGroups() {
     }

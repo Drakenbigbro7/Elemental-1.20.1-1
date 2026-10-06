@@ -36,6 +36,7 @@ import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -197,18 +198,17 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     @Override
     protected void initGoals() {
-        // Priority order matches SolvaneState priority
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(2, new KnightMeleeAttackGoal());
-        this.goalSelector.add(3, new KnightChargeGoal());
-        this.goalSelector.add(4, new KnightShieldBashGoal());
+        this.goalSelector.add(3, new KnightShieldBashGoal());
+        this.goalSelector.add(4, new KnightChargeGoal());
         this.goalSelector.add(5, new KnightCorePulseGoal());
-        this.goalSelector.add(6, new WanderNearTargetGoal(this, 1.0, 32.0f));
+        this.goalSelector.add(6, new KnightChaseTargetGoal());
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.8, 1));
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 24.0f));
         this.goalSelector.add(9, new LookAroundGoal(this));
 
-        this.targetSelector.add(1, new ActiveTargetGoal<>(this, PlayerEntity.class, true));
+        this.targetSelector.add(1, new KnightTargetGoal());
         this.targetSelector.add(2, new RevengeGoal(this));
     }
 
@@ -457,10 +457,10 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
         // Deal damage to entities in range
         if (this.getWorld() instanceof ServerWorld world) {
-            Box area = new Box(this.getPos().subtract(SLASH_RANGE, 2, SLASH_RANGE), this.getPos().add(SLASH_RANGE, 2, SLASH_RANGE));
+            Box area = this.getBoundingBox().expand(SLASH_RANGE, 2.0, SLASH_RANGE);
             List<LivingEntity> targets = world.getNonSpectatingEntities(LivingEntity.class, area);
             for (LivingEntity target : targets) {
-                if (target != this && this.squaredDistanceTo(target) <= SLASH_RANGE * SLASH_RANGE) {
+                if (target != this && this.squaredDistanceTo(target) <= (SLASH_RANGE + 1.5) * (SLASH_RANGE + 1.5)) {
                     target.damage(this.getDamageSources().mobAttack(this), SLASH_DAMAGE);
                 }
             }
@@ -574,27 +574,36 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     // ==================== AI GOALS ====================
     private class KnightMeleeAttackGoal extends Goal {
+        public KnightMeleeAttackGoal() {
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
         @Override
         public boolean canStart() {
             LivingEntity target = EverlivingKnightEntity.this.getTarget();
-            if (target == null || !target.isAlive()) return false;
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
             if (!canAttack()) return false;
             if (EverlivingKnightEntity.this.isCoreBroken() && EverlivingKnightEntity.this.dataTracker.get(DATA_STAGGERED)) return false;
 
             // Prefer slash when in range
             double distSq = EverlivingKnightEntity.this.squaredDistanceTo(target);
-            return distSq <= SLASH_RANGE * SLASH_RANGE * 1.5 && slashCooldown == 0;
+            return distSq <= (SLASH_RANGE + 1.5) * (SLASH_RANGE + 1.5) && slashCooldown == 0;
         }
 
         @Override
         public void start() {
+            EverlivingKnightEntity.this.getNavigation().stop();
             startSlash();
         }
 
         @Override
         public void tick() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target != null) {
+                EverlivingKnightEntity.this.getLookControl().lookAt(target, 30.0f, 30.0f);
+            }
             if (attackWindup > 0) return;
-            if (attackActive > 0) {
+            if (attackActive == 0 && attackRecovery == 0) {
                 executeSlash();
             }
         }
@@ -605,57 +614,36 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         }
     }
 
-    private class KnightChargeGoal extends Goal {
-        @Override
-        public boolean canStart() {
-            LivingEntity target = EverlivingKnightEntity.this.getTarget();
-            if (target == null || !target.isAlive()) return false;
-            if (!canAttack()) return false;
-            if (chargeCooldown > 0) return false;
-
-            double distSq = EverlivingKnightEntity.this.squaredDistanceTo(target);
-            return distSq > SLASH_RANGE * SLASH_RANGE * 2 && distSq < CHARGE_DISTANCE * CHARGE_DISTANCE * 2;
-        }
-
-        @Override
-        public void start() {
-            startCharge(EverlivingKnightEntity.this.getTarget());
-        }
-
-        @Override
-        public void tick() {
-            if (chargeWarningTicks > 0) return;
-            if (attackRecovery > 0) return;
-            executeCharge();
-        }
-
-        @Override
-        public boolean shouldContinue() {
-            return chargeWarningTicks > 0 || attackRecovery > 0;
-        }
-    }
-
     private class KnightShieldBashGoal extends Goal {
+        public KnightShieldBashGoal() {
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
         @Override
         public boolean canStart() {
             LivingEntity target = EverlivingKnightEntity.this.getTarget();
-            if (target == null || !target.isAlive()) return false;
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
             if (!canAttack()) return false;
             if (shieldBashCooldown > 0) return false;
 
             double distSq = EverlivingKnightEntity.this.squaredDistanceTo(target);
-            return distSq <= 9.0 && EverlivingKnightEntity.this.random.nextFloat() < 0.3;
+            return distSq <= 16.0 && EverlivingKnightEntity.this.random.nextFloat() < 0.35f;
         }
 
         @Override
         public void start() {
+            EverlivingKnightEntity.this.getNavigation().stop();
             startShieldBash();
         }
 
         @Override
         public void tick() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target != null) {
+                EverlivingKnightEntity.this.getLookControl().lookAt(target, 30.0f, 30.0f);
+            }
             if (attackWindup > 0) return;
-            if (attackActive > 0) {
+            if (attackActive == 0 && attackRecovery == 0) {
                 executeShieldBash();
             }
         }
@@ -666,34 +654,191 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
         }
     }
 
-    private class KnightCorePulseGoal extends Goal {
+    private class KnightChargeGoal extends Goal {
+        public KnightChargeGoal() {
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
         @Override
         public boolean canStart() {
             LivingEntity target = EverlivingKnightEntity.this.getTarget();
-            if (target == null || !target.isAlive()) return false;
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
+            if (!canAttack()) return false;
+            if (chargeCooldown > 0) return false;
+
+            double distSq = EverlivingKnightEntity.this.squaredDistanceTo(target);
+            return distSq > 16.0 && distSq < CHARGE_DISTANCE * CHARGE_DISTANCE * 2.5;
+        }
+
+        @Override
+        public void start() {
+            EverlivingKnightEntity.this.getNavigation().stop();
+            startCharge(EverlivingKnightEntity.this.getTarget());
+        }
+
+        @Override
+        public void tick() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (chargeWarningTicks > 0) {
+                if (target != null) {
+                    EverlivingKnightEntity.this.getLookControl().lookAt(target, 30.0f, 30.0f);
+                    chargeTargetPos = target.getPos();
+                }
+                return;
+            }
+            if (chargeTargetPos != null) {
+                executeCharge();
+            }
+        }
+
+        @Override
+        public boolean shouldContinue() {
+            return chargeWarningTicks > 0 || attackRecovery > 0 || chargeTargetPos != null;
+        }
+    }
+
+    private class KnightCorePulseGoal extends Goal {
+        private boolean executed = false;
+
+        public KnightCorePulseGoal() {
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
+        @Override
+        public boolean canStart() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
             if (!canAttack()) return false;
             if (corePulseCooldown > 0) return false;
 
             // More frequent in later phases
-            float chance = currentPhase == Phase.PHASE_3 ? 0.15f : (currentPhase == Phase.PHASE_2 ? 0.08f : 0.05f);
+            float chance = currentPhase == Phase.PHASE_3 ? 0.20f : (currentPhase == Phase.PHASE_2 ? 0.12f : 0.08f);
             return EverlivingKnightEntity.this.random.nextFloat() < chance;
         }
 
         @Override
         public void start() {
+            this.executed = false;
+            EverlivingKnightEntity.this.getNavigation().stop();
             startCorePulse();
         }
 
         @Override
         public void tick() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target != null) {
+                EverlivingKnightEntity.this.getLookControl().lookAt(target, 30.0f, 30.0f);
+            }
             if (corePulseWarningTicks > 0) return;
-            if (attackRecovery > 0) return;
-            executeCorePulse();
+            if (!this.executed) {
+                this.executed = true;
+                executeCorePulse();
+            }
         }
 
         @Override
         public boolean shouldContinue() {
             return corePulseWarningTicks > 0 || attackRecovery > 0;
+        }
+    }
+
+    private class KnightChaseTargetGoal extends Goal {
+        private int updatePathDelay = 0;
+
+        public KnightChaseTargetGoal() {
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
+        @Override
+        public boolean canStart() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
+            if (EverlivingKnightEntity.this.isCoreBroken() && EverlivingKnightEntity.this.dataTracker.get(DATA_STAGGERED)) return false;
+            return attackWindup == 0 && attackActive == 0 && attackRecovery == 0 && chargeWarningTicks == 0 && corePulseWarningTicks == 0;
+        }
+
+        @Override
+        public boolean shouldContinue() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
+            if (EverlivingKnightEntity.this.isCoreBroken() && EverlivingKnightEntity.this.dataTracker.get(DATA_STAGGERED)) return false;
+            return attackWindup == 0 && attackActive == 0 && attackRecovery == 0 && chargeWarningTicks == 0 && corePulseWarningTicks == 0;
+        }
+
+        @Override
+        public void start() {
+            this.updatePathDelay = 0;
+        }
+
+        @Override
+        public void stop() {
+            EverlivingKnightEntity.this.getNavigation().stop();
+        }
+
+        @Override
+        public void tick() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target == null) return;
+
+            EverlivingKnightEntity.this.getLookControl().lookAt(target, 30.0f, 30.0f);
+
+            if (--this.updatePathDelay <= 0) {
+                this.updatePathDelay = 4 + EverlivingKnightEntity.this.random.nextInt(6);
+                double speed = 1.35;
+                if (EverlivingKnightEntity.this.currentPhase == Phase.PHASE_3) {
+                    speed = 1.6;
+                }
+                EverlivingKnightEntity.this.getNavigation().startMovingTo(target, speed);
+            }
+        }
+    }
+
+    private class KnightTargetGoal extends Goal {
+        private final double targetDistance = 48.0;
+
+        public KnightTargetGoal() {
+            this.setControls(EnumSet.of(Control.TARGET));
+        }
+
+        @Override
+        public boolean canStart() {
+            LivingEntity currentTarget = EverlivingKnightEntity.this.getTarget();
+            if (currentTarget != null && currentTarget.isAlive() && !currentTarget.isSpectator()
+                    && EverlivingKnightEntity.this.squaredDistanceTo(currentTarget) <= targetDistance * targetDistance) {
+                return false;
+            }
+
+            PlayerEntity chosen = null;
+            double chosenDistSq = targetDistance * targetDistance;
+
+            for (PlayerEntity player : EverlivingKnightEntity.this.getWorld().getPlayers()) {
+                if (!player.isAlive() || player.isSpectator()) continue;
+                double distSq = EverlivingKnightEntity.this.squaredDistanceTo(player);
+                if (distSq <= targetDistance * targetDistance) {
+                    if (!player.isCreative()) {
+                        if (chosen == null || chosen.isCreative() || distSq < chosenDistSq) {
+                            chosen = player;
+                            chosenDistSq = distSq;
+                        }
+                    } else if (chosen == null || (chosen.isCreative() && distSq < chosenDistSq)) {
+                        chosen = player;
+                        chosenDistSq = distSq;
+                    }
+                }
+            }
+
+            if (chosen != null) {
+                EverlivingKnightEntity.this.setTarget(chosen);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean shouldContinue() {
+            LivingEntity target = EverlivingKnightEntity.this.getTarget();
+            if (target == null || !target.isAlive() || target.isSpectator()) return false;
+            return EverlivingKnightEntity.this.squaredDistanceTo(target) <= (targetDistance + 16.0) * (targetDistance + 16.0);
         }
     }
 
@@ -889,8 +1034,7 @@ public class EverlivingKnightEntity extends HostileEntity implements GeoEntity {
 
     public void triggerAnimation(String animName) {
         this.pendingAnimation = animName;
-        // In a full implementation, this would send a packet to clients to trigger the animation
-        // For now, we track it for the animation controller
+        this.triggerAnim("controller", animName);
     }
 
     @Override
