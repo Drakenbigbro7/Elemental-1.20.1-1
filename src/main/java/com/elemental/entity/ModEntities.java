@@ -30,6 +30,26 @@ public class ModEntities {
                     .build()
     );
 
+    public static final EntityType<TidebreakerTridentEntity> TIDEBREAKER_TRIDENT_PROJECTILE = Registry.register(
+            Registries.ENTITY_TYPE,
+            Elemental.id("tidebreaker_trident_projectile"),
+            FabricEntityTypeBuilder.<TidebreakerTridentEntity>create(SpawnGroup.MISC, TidebreakerTridentEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.5f, 0.5f))
+                    .trackRangeBlocks(64)
+                    .trackedUpdateRate(10)
+                    .build()
+    );
+
+    public static final EntityType<TidebreakerBubbleEntity> TIDEBREAKER_BUBBLE = Registry.register(
+            Registries.ENTITY_TYPE,
+            Elemental.id("tidebreaker_bubble"),
+            FabricEntityTypeBuilder.<TidebreakerBubbleEntity>create(SpawnGroup.MISC, TidebreakerBubbleEntity::new)
+                    .dimensions(EntityDimensions.fixed(1.0f, 1.0f))
+                    .trackRangeBlocks(64)
+                    .trackedUpdateRate(10)
+                    .build()
+    );
+
     public static void registerModEntities() {
         Elemental.LOGGER.info("Registering mod entities for " + Elemental.MOD_ID);
         FabricDefaultAttributeRegistry.register(EVERLIVING_KNIGHT, EverlivingKnightEntity.createKnightAttributes());

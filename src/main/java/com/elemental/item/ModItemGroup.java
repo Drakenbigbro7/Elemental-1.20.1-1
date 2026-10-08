@@ -33,6 +33,7 @@ public class ModItemGroup {
                         entries.add(ModItems.SUNFORGED_SCIMITAR);
                         entries.add(ModItems.FROSTWAKE_PICK);
                         entries.add(ModItems.ROOTBOUND_AXE);
+                        entries.add(ModItems.TIDEBREAKER_TRIDENT);
                     }).build());
 
     public static void registerItemGroups() {

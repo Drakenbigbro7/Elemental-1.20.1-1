@@ -2,7 +2,9 @@
   "block.elemental.weaponer": "Weaponer",
   "item.elemental.weaponer": "Weaponer",
   "container.elemental.weaponer": "Weaponer",
-  "item.elemental.stencil": "Weapon Stencil",
+  "item.elemental.stencil": "Unpowered Stencil",
+  "tooltip.elemental.weaponer.stencil_slot": "Insert Unpowered Stencil",
+  "tooltip.elemental.weaponer.element_slot": "Insert Elemental Ingredient",
   "item.elemental.element_core": "Element Core",
   "item.elemental.dry_heat_element": "Dry Heat Element",
   "item.elemental.snow_element": "Snow Element",
@@ -16,5 +18,10 @@
   "item.elemental.rootbound_axe": "Rootbound Axe",
   "entity.elemental.everliving_knight": "Everliving Knight",
   "itemgroup.elemental_ingredient_group": "Elemental Ingredient",
-  "itemgroup.elemental_weapon_group": "Elemental Weapon"
+  "itemgroup.elemental_weapon_group": "Elemental Weapon",
+  "item.elemental.tidebreaker_trident": "Tidebreaker Trident",
+  "entity.elemental.tidebreaker_trident_projectile": "Tidebreaker Trident",
+  "entity.elemental.tidebreaker_bubble": "Tidebreaker Bubble",
+  "key.elemental.tidebreaker_dash": "Tidebreaker Dash",
+  "category.elemental": "Elemental"
 }

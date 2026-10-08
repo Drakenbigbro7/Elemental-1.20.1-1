@@ -5,6 +5,7 @@ import com.elemental.block.entity.ModBlockEntities;
 import com.elemental.entity.ModEntities;
 import com.elemental.item.ModItemGroup;
 import com.elemental.item.ModItems;
+import com.elemental.network.TidebreakerNetworking;
 import com.elemental.recipe.WeaponerRecipes;
 import com.elemental.screen.ModScreenHandlers;
 import com.elemental.util.SunforgedHeatHandler;
@@ -28,6 +29,7 @@ public class Elemental implements ModInitializer {
 		ModItemGroup.registerItemGroups();
 		ModEntities.registerModEntities();
 		SunforgedHeatHandler.register();
+		TidebreakerNetworking.registerServerReceivers();
 	}
 
 	public static Identifier id(String path) {

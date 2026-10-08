@@ -43,6 +43,13 @@ public class ModItems {
                     new FabricItemSettings().maxDamage(RootboundAxeItem.DURABILITY).rarity(Rarity.COMMON)
             )
     );
+    public static final Item TIDEBREAKER_TRIDENT = Registry.register(
+            Registries.ITEM,
+            new Identifier(Elemental.MOD_ID, "tidebreaker_trident"),
+            new TidebreakerTridentItem(
+                    new FabricItemSettings().maxDamage(TidebreakerTridentItem.MAX_DURABILITY).rarity(Rarity.RARE)
+            )
+    );
 
     public static final Item STENCIL = registerItem("stencil",
             new Item(new FabricItemSettings()));
@@ -68,6 +75,8 @@ public class ModItems {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(FROSTWAKE_PICK));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(ROOTBOUND_AXE));
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(ROOTBOUND_AXE));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> entries.add(TIDEBREAKER_TRIDENT));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(TIDEBREAKER_TRIDENT));
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
             entries.add(STENCIL);
